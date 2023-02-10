@@ -1,0 +1,12 @@
+backports.cached-property==1.0.2
+grpcio==1.51.1
+grpcio-tools==1.51.1
+numpy==1.24.2
+overrides==7.3.1
+protobuf==4.21.12
+robotframework==6.0.2
+robotframework-assertion-engine==1.0.0
+robotframework-browser==16.0.0
+robotframework-pythonlibcore==4.1.0
+typing_extensions==4.4.0
+wrapt==1.14.1
