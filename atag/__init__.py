@@ -1,25 +1,132 @@
+import sys, os
+import torch
+import torch.nn.functional as F
+from torch import nn
+from torch.distributions import Normal
+import numpy as np
 
-from Browser import Browser
-from Browser.utils.data_types import SupportedBrowsers
+def to_numpy(tensor):
+    return tensor.squeeze(0).cpu().numpy()
 
-class ATAG_browser():
-    def __init__():
-        pass
+def discount_rewards(r, gamma):
+    discounted_r = torch.zeros_like(r)
+    running_add = 0
+    for t in reversed(range(0, r.size(-1))):
+        running_add = running_add * gamma + r[t]
+        discounted_r[t] = running_add
+    return discounted_r
 
-    def scanForActions():
-        pass
+# Use CUDA for storing tensors / calculations if it's available
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    def returnActions():
-        pass
+# Initialisation function for neural network layers
+def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
+    torch.nn.init.orthogonal_(layer.weight, std)
+    torch.nn.init.constant_(layer.bias, bias_const)
+    return layer
 
 
 
-#b = Browser(timeout="20 s", retry_assertions_for="500 ms")
-#b.new_browser(browser=SupportedBrowsers.chromium)
-#b.new_context(
-#    acceptDownloads=True,
-#    viewport={"width": 1920, "height": 1080}
-#)
-#b.new_page("https://playwright.dev")
-#assert b.get_text("h1") == "🎭 Playwright"
-#b.close_browser()
+# This class defines the neural network policy
+class Policy(nn.Module):
+    def __init__(self, state_dim, action_dim):
+        super(Policy, self).__init__()
+
+        self.actor_mean = nn.Sequential(
+            layer_init(nn.Linear(state_dim, 64)),
+            nn.Tanh(),
+            layer_init(nn.Linear(64, 64)),
+            nn.Tanh(),
+            layer_init(nn.Linear(64, action_dim), std=0.01),
+        )
+        
+        self.actor_logstd = torch.tensor([0.0], device=device)
+
+
+    def forward(self, state):
+        action_mean = self.actor_mean(state)
+        action_logstd = self.actor_logstd.expand_as(action_mean)
+        action_std = torch.exp(action_logstd)
+        probs = Normal(action_mean,action_std)
+        return probs
+    
+
+class PG(object):
+    def __init__(self, state_dim, action_dim, lr, gamma):
+
+
+        self.policy = Policy(state_dim, action_dim).to(device)
+        self.optimizer = torch.optim.Adam(self.policy.parameters(), lr=lr)
+
+        self.gamma = gamma
+        self.action_probs = []
+        self.rewards = []
+
+    def update(self,):
+
+        # Prepare dataset used to update policy
+        action_probs = torch.stack(self.action_probs, dim=0) \
+                .to(device).squeeze(-1) # shape: [batch_size,]
+        rewards = torch.stack(self.rewards, dim=0).to(device).squeeze(-1) # shape [batch_size,]
+        self.action_probs, self.rewards = [], [] # clean buffers
+        disc_rewards = discount_rewards(rewards,self.gamma)
+        
+        # Normalize rewards
+        disc_rewards=(disc_rewards-torch.mean(disc_rewards))/torch.std(disc_rewards)
+        baseline = 0
+        loss = torch.mean(-1*(disc_rewards-baseline)*torch.t(action_probs)[0])
+
+        loss.backward()
+        self.optimizer.step()
+        self.optimizer.zero_grad()
+
+        return {'logstd': self.policy.actor_logstd.cpu().detach().numpy()}
+
+
+    def get_action(self, observation, evaluation=False):
+
+        if observation.ndim == 1: observation = observation[None]
+        x = torch.from_numpy(observation).float().to(device)
+
+        distrib=self.policy.forward(x)
+        action = distrib.mean if evaluation else distrib.sample((1,))[0]
+        act_logprob = distrib.log_prob(action)
+        
+        if observation.ndim == 1: action = action[0]
+        return action, act_logprob
+
+
+class Atag:
+    def __init__(self, env, lr, gamma):
+        self.env = env
+        self.agent = PG(env.state_dim, env.action_dim, lr, gamma)
+
+
+    def run_episode(self):
+        reward_sum, timesteps, done = 0, 0, False
+        obs = self.env.reset()
+
+        while not done:
+            action, act_logprob = self.agent.get_action(obs)
+            obs, reward, done, _ = self.env.step(to_numpy(action))
+            #self.agent.record(act_logprob, reward)
+            reward_sum += reward
+            timesteps += 1
+
+        # Update the policy after one episode
+        info = self.agent.update()
+
+        # Return stats of training
+        info.update({'timesteps': timesteps,
+                    'ep_reward': reward_sum,})
+        return info
+
+
+    def train(self,episodes):
+        for ep in range(episodes):
+            # collect data and update the policy
+            train_info = self.run_episode()
+            train_info.update({'episodes': ep})
+            print({"ep": ep, **train_info})
+        
+
