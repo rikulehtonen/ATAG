@@ -108,7 +108,7 @@ class Atag:
 
         while not done:
             action, act_logprob = self.agent.get_action(obs)
-            obs, reward, done, _ = self.env.step(to_numpy(action))
+            obs, reward, done = self.env.step(to_numpy(action))
             #self.agent.record(act_logprob, reward)
             reward_sum += reward
             timesteps += 1

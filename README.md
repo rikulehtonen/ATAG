@@ -1,6 +1,6 @@
-# Foobar
+# ATAG
 
-Foobar is a Python library for dealing with word pluralization.
+This is a experimental tool that combines reinforcement learning and test libraries to build tests. 
 
 ## Installation
 
@@ -27,10 +27,7 @@ foobar.singularize('phenomena')
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first
-to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
+This is a private repository for a master thesis project. Pull requests are not possible for the time being. Suggestions are always welcome: riku.lehtonen@tietoevry.com
 
 ## License
 
