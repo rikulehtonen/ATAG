@@ -7,7 +7,7 @@ def load_conf():
 def main():
     episodes = 100
     browserEnv = BrowserEnv()
-    atag_browser = Atag(browserEnv)
+    atag_browser = Atag(browserEnv,0.1,0.1)
     atag_browser.train(episodes)
     browserEnv.terminate()
 
