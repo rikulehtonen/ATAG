@@ -32,28 +32,27 @@ class Policy(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(Policy, self).__init__()
 
-        self.actor_mean = nn.Sequential(
+        self.nn = nn.Sequential(
             layer_init(nn.Linear(state_dim, 64)),
             nn.Tanh(),
             layer_init(nn.Linear(64, 64)),
             nn.Tanh(),
             layer_init(nn.Linear(64, action_dim), std=0.01),
         )
-        
+
         self.actor_logstd = torch.tensor([0.0], device=device)
 
 
     def forward(self, state):
-        action_mean = self.actor_mean(state)
+        action_mean = self.nn(state)
         action_logstd = self.actor_logstd.expand_as(action_mean)
         action_std = torch.exp(action_logstd)
-        probs = Normal(action_mean,action_std)
+        probs = Normal(action_mean, action_std)
         return probs
     
 
 class PG(object):
     def __init__(self, state_dim, action_dim, lr, gamma):
-
 
         self.policy = Policy(state_dim, action_dim).to(device)
         self.optimizer = torch.optim.Adam(self.policy.parameters(), lr=lr)
@@ -63,16 +62,14 @@ class PG(object):
         self.rewards = []
 
     def update(self,):
-
         # Prepare dataset used to update policy
-        action_probs = torch.stack(self.action_probs, dim=0) \
-                .to(device).squeeze(-1) # shape: [batch_size,]
+        action_probs = torch.stack(self.action_probs, dim=0).to(device).squeeze(-1) # shape: [batch_size,]
         rewards = torch.stack(self.rewards, dim=0).to(device).squeeze(-1) # shape [batch_size,]
         self.action_probs, self.rewards = [], [] # clean buffers
         disc_rewards = discount_rewards(rewards,self.gamma)
-        
+
         # Normalize rewards
-        disc_rewards=(disc_rewards-torch.mean(disc_rewards))/torch.std(disc_rewards)
+        #disc_rewards=(disc_rewards-torch.mean(disc_rewards))/torch.std(disc_rewards)
         baseline = 0
         loss = torch.mean(-1*(disc_rewards-baseline)*torch.t(action_probs)[0])
 
@@ -84,32 +81,37 @@ class PG(object):
 
 
     def get_action(self, observation, evaluation=False):
-
-        if observation.ndim == 1: observation = observation[None]
+        # if observation.ndim == 1: observation = observation[None]
+        # print(observation)
         x = torch.from_numpy(observation).float().to(device)
-
         distrib=self.policy.forward(x)
         action = distrib.mean if evaluation else distrib.sample((1,))[0]
         act_logprob = distrib.log_prob(action)
         
-        if observation.ndim == 1: action = action[0]
+        #if observation.ndim == 1: action = action[0]
         return action, act_logprob
+
+
+    def record(self, action_prob, reward):
+        """ Store agent's and env's outcomes to update the agent."""
+        self.action_probs.append(action_prob)
+        self.rewards.append(torch.tensor([reward]))
 
 
 class Atag:
     def __init__(self, env, lr, gamma):
         self.env = env
-        self.agent = PG(env.state_dim, env.action_dim, lr, gamma)
+        self.agent = PG(env.state_dim(), env.action_dim(), lr, gamma)
 
 
     def run_episode(self):
         reward_sum, timesteps, done = 0, 0, False
-        obs = self.env.reset()
+        obs, _, _ = self.env.reset()
 
         while not done:
             action, act_logprob = self.agent.get_action(obs)
             obs, reward, done = self.env.step(to_numpy(action))
-            #self.agent.record(act_logprob, reward)
+            self.agent.record(act_logprob, reward)
             reward_sum += reward
             timesteps += 1
 
@@ -129,4 +131,3 @@ class Atag:
             train_info.update({'episodes': ep})
             print({"ep": ep, **train_info})
         
-
