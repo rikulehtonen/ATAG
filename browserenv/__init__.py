@@ -3,6 +3,7 @@ from Browser.utils.data_types import SupportedBrowsers
 import time
 import numpy as np
 from Browser import AssertionOperator
+import os
 
 
 
@@ -14,20 +15,28 @@ class BrowserEnv:
             acceptDownloads=True,
             viewport={"width": 700, "height": 500}
         )
-        self.b.new_page("file:///Users/riku/Documents/Aalto/ATAG/resources/login/login.html")
+        
+        self.init_steps()
 
         self.steps = 0
 
-        self.targets = [['get_element_states', ['xpath=//div[@id="logininfo"]', AssertionOperator.contains, 'visible'], 1.0, 0.0, True]]
+        self.targets = [['get_element_states', ['xpath=//div[@id="logininfo"]', AssertionOperator.contains, 'visible'], 2.0, 0.0, True]]
 
         self.elements = [['get_element_states', ['xpath=//form[@id="myForm"]', AssertionOperator.contains, 'visible']],
                          ['get_element_states', ['xpath=//div[@id="loginFailed"]', AssertionOperator.contains, 'visible']],
-                         ['get_element_states', ['xpath=//div[@id="logininfo"]', AssertionOperator.contains, 'visible']]]
+                         ['get_element_states', ['xpath=//div[@id="logininfo"]', AssertionOperator.contains, 'visible']],
+                         ['get_text', ['xpath=//input[@name="uname"]', AssertionOperator.equal, 'testaaja']],
+                         ['get_text', ['xpath=//input[@name="psw"]', AssertionOperator.equal, 'testi']]]
 
         self.actions = [['click', ['xpath=//button[@id="loginBox"]']],
                         ['click', ['xpath=//button[@type="submit"]']],
+                        ['button', ['xpath=//button[@class="cancelbtn"]']],
                         ['type_text', ['xpath=//input[@name="uname"]','testaaja']],
                         ['type_text', ['xpath=//input[@name="psw"]','testi']]]
+
+    def init_steps(self):
+        page = 'file://' + os.getcwd() + '/resources/login/login.html'
+        self.b.new_page(page)
 
     def state_dim(self):
         return len(self.elements)
@@ -37,7 +46,7 @@ class BrowserEnv:
 
     def reset(self):
         self.b.close_page()
-        self.b.new_page("file:///Users/riku/Documents/Aalto/ATAG/resources/login/login.html")
+        self.init_steps()
         self.steps = 0
         return self.observe()
 
@@ -47,9 +56,9 @@ class BrowserEnv:
     def action(self, act, args, kwargs):
         try:
             getattr(self.b, act)(*args, **kwargs)
-            return 0
+            return -0.1
         except:
-            return -1
+            return -1.0
 
     def observe(self):
         done = False
@@ -82,6 +91,5 @@ class BrowserEnv:
         selected_act = self.actions[act.argmax()]
         act_r = self.action(selected_act[0], selected_act[1], {})
         obs, reward, done = self.observe()
-
         self.steps += 1
         return obs, np.min([reward, act_r]), done
