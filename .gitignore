@@ -3,7 +3,7 @@ venv
 driver
 __pycache__
 .DS_Store
-
+results
 
 # Logs
 playwright-log.txt

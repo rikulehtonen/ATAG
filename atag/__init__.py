@@ -97,6 +97,12 @@ class PG(object):
         self.action_probs.append(action_prob)
         self.rewards.append(torch.tensor([reward]))
 
+    def save(self, filepath):
+        torch.save(self.policy.state_dict(), filepath)
+
+    def load(self, filepath):
+        self.policy.load_state_dict(torch.load(filepath))
+
 
 class Atag:
     def __init__(self, env, lr, gamma):
@@ -128,6 +134,10 @@ class Atag:
         for ep in range(episodes):
             # collect data and update the policy
             train_info = self.run_episode()
+            
+            # Update results
+            if (ep+1) % 10 == 0:
+                self.agent.save('results/model/' + f'episode_{ep+1}_params.pt')
             train_info.update({'episodes': ep})
             print({"ep": ep, **train_info})
         
