@@ -1,28 +1,26 @@
 # ATAG
 
-This is a experimental tool that combines reinforcement learning and test libraries to build tests. 
+an experimental tool that combines reinforcement learning and test libraries to build tests. Current version is only used for demo.
+
+![Demo](resources/material/atag_demo.gif)
 
 ## Installation
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
 
 ```bash
-pip install foobar
+pip install -r requirements.txt
 ```
 
 ## Usage
 
-```python
-import foobar
+- atag: ML algorithm
+- browserenv: connection between the browser test library and the ML algorithm
 
-# returns 'words'
-foobar.pluralize('word')
+Set self.targets, self.elements and self.actions in browserenv __init__.py file. Run the training using:
 
-# returns 'geese'
-foobar.pluralize('goose')
-
-# returns 'phenomenon'
-foobar.singularize('phenomena')
+```bash
+python run.py
 ```
 
 ## Contributing
