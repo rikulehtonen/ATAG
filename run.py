@@ -5,7 +5,7 @@ def load_conf():
     pass
 
 def main():
-    episodes = 150
+    episodes = 200
     browserEnv = BrowserEnv()
     atag_browser = Atag(browserEnv, 0.01, 0.99)
     atag_browser.train(episodes)

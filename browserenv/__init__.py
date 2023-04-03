@@ -20,7 +20,7 @@ class BrowserEnv:
 
         self.steps = 0
 
-        self.targets = [['get_element_states', ['xpath=//div[@id="logininfo"]', AssertionOperator.contains, 'visible'], 2.0, 0.0, True]]
+        self.targets = [['get_element_states', ['xpath=//div[@id="logininfo"]', AssertionOperator.contains, 'visible'], 2.0, None, True]]
 
         self.elements = [['get_element_states', ['xpath=//form[@id="myForm"]', AssertionOperator.contains, 'visible']],
                          ['get_element_states', ['xpath=//div[@id="loginFailed"]', AssertionOperator.contains, 'visible']],
@@ -92,4 +92,8 @@ class BrowserEnv:
         act_r = self.action(selected_act[0], selected_act[1], {})
         obs, reward, done = self.observe()
         self.steps += 1
-        return obs, np.min([reward, act_r]), done
+
+        if reward != None:
+            return obs, np.max([reward, act_r]), done
+        else:
+            return obs, act_r, done

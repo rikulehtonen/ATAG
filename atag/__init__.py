@@ -40,7 +40,7 @@ class Policy(nn.Module):
             layer_init(nn.Linear(64, action_dim), std=0.01),
         )
 
-        self.actor_logstd = torch.tensor([0.0], device=device)
+        self.actor_logstd = torch.nn.Parameter(torch.tensor([0.0], device=device)) 
 
 
     def forward(self, state):
