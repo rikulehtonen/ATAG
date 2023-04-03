@@ -1,6 +1,6 @@
 # ATAG
 
-an experimental tool that combines reinforcement learning and test libraries to build tests. Current version is only used for demo.
+An experimental tool that combines reinforcement learning and test libraries to build tests. The current version is only for demonstration purposes.
 
 ![Demo](resources/material/atag_demo.gif)
 
@@ -15,7 +15,7 @@ pip install -r requirements.txt
 ## Usage
 
 - atag: ML algorithm
-- browserenv: connection between the browser test library and the ML algorithm
+- browserenv: connection between the Browser library and the ML algorithm
 
 Set self.targets, self.elements and self.actions in browserenv __init__.py file. Run the training using:
 
