@@ -23,14 +23,14 @@ b.new_page('https://fi.wikipedia.org/')
 time.sleep(2)
 
 ids = """
-Array.prototype.map.call(document.getElementsByTagName('*'), (child) => {
+Array.prototype.map.call(document.getElementsByTagName("*"), (child) => {
 if (child.offsetParent === null){ 
    return null
 } 
 else {
-   return child.getAttribute('id')
+   return {'text': child.textContent, 'id': child.getAttribute("id")}
 } 
-})
+}).filter(elements => { return elements !== null })
 """
 
 start_time = time.time()
