@@ -6,12 +6,11 @@ from Browser import AssertionOperator
 import multiprocessing
 import time
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, Set, Union
-
 
 def checkpage(e):
     #num = b.get_element_count('xpath=//form[@id="myForm"]')
-    e.get_element('xpath=//*[@id="loginBox"]')
+    check = 'footer-poweredbyico' in e
+    #print(check)
 
 b = Browser(timeout="0 s", retry_assertions_for="0 ms")
 b.new_browser(headless=False, browser=SupportedBrowsers.chromium)
@@ -23,16 +22,36 @@ b.new_context(
 b.new_page('https://fi.wikipedia.org/')
 time.sleep(2)
 
+ids = """
+Array.prototype.map.call(document.getElementsByTagName('*'), (child) => {
+if (child.offsetParent === null){ 
+   return null
+} 
+else {
+   return child.getAttribute('id')
+} 
+})
+"""
+
+start_time = time.time()
+elements = b.evaluate_javascript('xpath=//html', ids)
+
+for i in range(10000):
+    checkpage(elements)
+
+print("--- %s seconds ---" % (time.time() - start_time))
+
+print(elements)
 
 
 #e = b.get_element_count('xpath=//*')
 #print(e)
 
-start_time = time.time()
+#start_time = time.time()
 #ids = [b.get_property(elem,'id') for elem in e]
 
-print('done')
-print("--- %s seconds ---" % (time.time() - start_time))
+#print('done')
+#print("--- %s seconds ---" % (time.time() - start_time))
 
 #print(ids)
 b.close_browser()

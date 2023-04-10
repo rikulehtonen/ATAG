@@ -34,6 +34,8 @@ class BrowserEnv:
                         ['type_text', ['xpath=//input[@name="uname"]','testaaja']],
                         ['type_text', ['xpath=//input[@name="psw"]','testi']]]
 
+
+
     def init_steps(self):
         page = 'file://' + os.getcwd() + '/resources/login/login.html'
         self.b.new_page(page)
