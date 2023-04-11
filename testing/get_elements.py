@@ -23,21 +23,24 @@ b.new_page('https://fi.wikipedia.org/')
 time.sleep(2)
 
 ids = """
-Array.prototype.map.call(document.getElementsByTagName("*"), (child) => {
-if (child.offsetParent === null){ 
-   return null
-} 
-else {
-   return {'text': child.textContent, 'id': child.getAttribute("id")}
-} 
+Array.prototype.map.call(document.getElementsByTagName('*'), (child) => 
+{ 
+    if (child.offsetParent === null)
+    { 
+        return null 
+    } 
+    else 
+    { 
+        return { 'text': child.textContent, 'id': child.getAttribute('id') } 
+    } 
 }).filter(elements => { return elements !== null })
 """
 
 start_time = time.time()
 elements = b.evaluate_javascript('xpath=//html', ids)
 
-for i in range(10000):
-    checkpage(elements)
+#for i in range(10000):
+#    checkpage(elements)
 
 print("--- %s seconds ---" % (time.time() - start_time))
 

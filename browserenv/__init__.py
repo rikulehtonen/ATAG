@@ -8,35 +8,38 @@ import os
 
 
 class BrowserEnv:
-    def __init__(self):
+    def __init__(self, collectData=False):
         self.b = Browser(timeout="1.2 s", retry_assertions_for="500 ms")
         self.b.new_browser(headless=False, browser=SupportedBrowsers.chromium)
         self.b.new_context(
             acceptDownloads=True,
             viewport={"width": 700, "height": 500}
         )
-        
-        self.init_steps()
 
+
+        self.collectData = collectData
         self.steps = 0
 
-        self.targets = [['get_element_states', ['xpath=//div[@id="logininfo"]', AssertionOperator.contains, 'visible'], 2.0, None, True]]
+        #self.targets = [['get_element_states', ['xpath=//div[@id="logininfo"]', AssertionOperator.contains, 'visible'], 2.0, None, True]]
 
-        self.elements = [['get_element_states', ['xpath=//form[@id="myForm"]', AssertionOperator.contains, 'visible']],
-                         ['get_element_states', ['xpath=//div[@id="loginFailed"]', AssertionOperator.contains, 'visible']],
-                         ['get_element_states', ['xpath=//div[@id="logininfo"]', AssertionOperator.contains, 'visible']],
-                         ['get_text', ['xpath=//input[@name="uname"]', AssertionOperator.equal, 'testaaja']],
-                         ['get_text', ['xpath=//input[@name="psw"]', AssertionOperator.equal, 'testi']]]
+        #self.elements = [['get_element_states', ['xpath=//form[@id="myForm"]', AssertionOperator.contains, 'visible']],
+        #                 ['get_element_states', ['xpath=//div[@id="loginFailed"]', AssertionOperator.contains, 'visible']],
+        #                 ['get_element_states', ['xpath=//div[@id="logininfo"]', AssertionOperator.contains, 'visible']],
+        #                 ['get_text', ['xpath=//input[@name="uname"]', AssertionOperator.equal, 'testaaja']],
+        #                 ['get_text', ['xpath=//input[@name="psw"]', AssertionOperator.equal, 'testi']]]
 
-        self.actions = [['click', ['xpath=//button[@id="loginBox"]']],
-                        ['click', ['xpath=//button[@type="submit"]']],
-                        ['button', ['xpath=//button[@class="cancelbtn"]']],
-                        ['type_text', ['xpath=//input[@name="uname"]','testaaja']],
-                        ['type_text', ['xpath=//input[@name="psw"]','testi']]]
+        #self.actions = [['click', ['xpath=//button[@id="loginBox"]']],
+        #                ['click', ['xpath=//button[@type="submit"]']],
+        #                ['button', ['xpath=//button[@class="cancelbtn"]']],
+        #                ['type_text', ['xpath=//input[@name="uname"]','testaaja']],
+        #                ['type_text', ['xpath=//input[@name="psw"]','testi']]]
 
+
+        self.init_steps()
 
 
     def init_steps(self):
+        #Todo: Create Initializer
         page = 'file://' + os.getcwd() + '/resources/login/login.html'
         self.b.new_page(page)
 
