@@ -1,29 +1,32 @@
 
 
-class DataLoad:
-    def __init__(self):
-        self.folder = None
-
-    def load_elements(self):
-        pass
-
-    def load_actions(self):
-        pass
-
-    def load_targets(self):
-        pass
-
-
-
 class DataSave:
-    def __init__(self):
-        self.folder = None
+    def __init__(self, folder):
+        self.folder = folder
 
-    def save_elements(self):
+    def elements(self):
         pass
 
-    def save_actions(self):
+    def actions(self):
         pass
 
-    def save_targets(self):
+    def targets(self):
         pass
+
+
+
+class DataLoad:
+    def __init__(self, folder):
+        self.folder = folder
+        self.elements = None
+        self.actions = None
+        self.targets = None
+
+    def elements(self):
+        return self.elements
+
+    def action(self, index):
+        return self.actions[index]
+
+    def targets(self):
+        return(self.targets)

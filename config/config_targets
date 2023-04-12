@@ -1,1 +1,0 @@
-'get_element_states'   'xpath=//div[@id="logininfo"]'   AssertionOperator.contains   'visible'   2.0   None   True

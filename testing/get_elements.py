@@ -18,23 +18,21 @@ b.new_context(
     acceptDownloads=True,
     viewport={"width": 700, "height": 500}
 )
-#b.new_page('file://' + os.getcwd() + '/resources/login/login.html')
-b.new_page('https://fi.wikipedia.org/')
+b.new_page('file://' + os.getcwd() + '/resources/login/login.html')
+#b.new_page('https://fi.wikipedia.org/')
 time.sleep(2)
 
-ids = """
-Array.prototype.map.call(document.getElementsByTagName('*'), (child) => 
+ids = """Array.prototype.map.call(document.getElementsByTagName('*'), (child) => 
 { 
     if (child.offsetParent === null)
-    { 
+    {
         return null 
     } 
     else 
     { 
         return { 'text': child.textContent, 'id': child.getAttribute('id') } 
     } 
-}).filter(elements => { return elements !== null })
-"""
+}).filter(elements => { return elements !== null })"""
 
 start_time = time.time()
 elements = b.evaluate_javascript('xpath=//html', ids)
