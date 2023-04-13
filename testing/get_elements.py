@@ -21,16 +21,17 @@ b.new_context(
 b.new_page('file://' + os.getcwd() + '/resources/login/login.html')
 #b.new_page('https://fi.wikipedia.org/')
 time.sleep(2)
+b.click('xpath=//button[@id="loginBox"]')
 
-ids = """Array.prototype.map.call(document.getElementsByTagName('*'), (child) => 
+ids = """Array.prototype.map.call(document.getElementsByTagName('*'), (element) => 
 { 
-    if (child.offsetParent === null)
+    if (element.offsetParent === null)
     {
         return null 
     } 
     else 
     { 
-        return { 'text': child.textContent, 'id': child.getAttribute('id') } 
+        return {'tag': element.tagName, 'text': element.textContent, 'value': element.value, 'id': element.getAttribute('id') } 
     } 
 }).filter(elements => { return elements !== null })"""
 

@@ -103,7 +103,7 @@ class PG(object):
 class Atag:
     def __init__(self, env, lr, gamma):
         self.env = env
-        self.agent = PG(env.state_dim(), env.action_dim(), lr, gamma)
+        self.agent = PG(env.state_dim, env.action_dim, lr, gamma)
 
     def run_episode(self):
         reward_sum, timesteps, done = 0, 0, False
