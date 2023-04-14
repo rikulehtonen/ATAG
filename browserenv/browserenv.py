@@ -28,7 +28,7 @@ class BrowserEnv:
 
 
     def init_steps(self):
-        # Todo: Create Initializer
+        # TODO: Create Initializer
         page = 'file://' + os.getcwd() + '/resources/login/login.html'
         self.b.new_page(page)
 
