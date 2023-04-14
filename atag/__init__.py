@@ -26,7 +26,6 @@ def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
     return layer
 
 
-
 # This class defines the neural network policy
 class Policy(nn.Module):
     def __init__(self, state_dim, action_dim):
@@ -41,7 +40,6 @@ class Policy(nn.Module):
         )
 
         self.actor_logstd = torch.nn.Parameter(torch.tensor([0.0], device=device)) 
-
 
     def forward(self, state):
         action_mean = self.nn(state)
@@ -79,7 +77,6 @@ class PG(object):
 
         return {'logstd': self.policy.actor_logstd.cpu().detach().numpy()}
 
-
     def get_action(self, observation, evaluation=False):
         # if observation.ndim == 1: observation = observation[None]
         # print(observation)
@@ -90,7 +87,6 @@ class PG(object):
         
         #if observation.ndim == 1: action = action[0]
         return action, act_logprob
-
 
     def record(self, action_prob, reward):
         """ Store agent's and env's outcomes to update the agent."""
@@ -107,8 +103,7 @@ class PG(object):
 class Atag:
     def __init__(self, env, lr, gamma):
         self.env = env
-        self.agent = PG(env.state_dim(), env.action_dim(), lr, gamma)
-
+        self.agent = PG(env.state_dim, env.action_dim, lr, gamma)
 
     def run_episode(self):
         reward_sum, timesteps, done = 0, 0, False
@@ -129,7 +124,6 @@ class Atag:
                     'ep_reward': reward_sum,})
         return info
 
-
     def train(self,episodes):
         for ep in range(episodes):
             # collect data and update the policy
@@ -140,4 +134,4 @@ class Atag:
                 self.agent.save('results/model/' + f'episode_{ep+1}_params.pt')
             train_info.update({'episodes': ep})
             print({"ep": ep, **train_info})
-        
+            
