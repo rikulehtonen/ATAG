@@ -6,7 +6,7 @@ from torch.distributions import Normal
 import numpy as np
 
 def to_numpy(tensor):
-    return tensor.squeeze(0).cpu().numpy()
+    return tensor.squeeze(0).cpu().detach().numpy()
 
 def discount_rewards(r, gamma):
     discounted_r = torch.zeros_like(r)
@@ -105,26 +105,32 @@ class Atag:
         self.env = env
         self.agent = PG(env.state_dim, env.action_dim, lr, gamma)
 
-    def run_episode(self):
+    def run_episode(self, evaluation=False):
         reward_sum, timesteps, done = 0, 0, False
         obs, _, _ = self.env.reset()
 
         while not done:
-            action, act_logprob = self.agent.get_action(obs)
+            action, act_logprob = self.agent.get_action(obs, evaluation)
             obs, reward, done = self.env.step(to_numpy(action))
-            self.agent.record(act_logprob, reward)
+            if not evaluation:
+                self.agent.record(act_logprob, reward)
+            else:
+                print(self.env.get_selected_action(to_numpy(action)))
             reward_sum += reward
             timesteps += 1
-
+            print(obs)
         # Update the policy after one episode
-        info = self.agent.update()
+        if not evaluation:
+            info = self.agent.update()
 
-        # Return stats of training
-        info.update({'timesteps': timesteps,
-                    'ep_reward': reward_sum,})
-        return info
+            # Return stats of training
+            info.update({'timesteps': timesteps,
+                        'ep_reward': reward_sum,})
+            return info
+        
+        return {}
 
-    def train(self,episodes):
+    def train(self, episodes):
         for ep in range(episodes):
             # collect data and update the policy
             train_info = self.run_episode()
@@ -134,4 +140,12 @@ class Atag:
                 self.agent.save('results/model/' + f'episode_{ep+1}_params.pt')
             train_info.update({'episodes': ep})
             print({"ep": ep, **train_info})
-            
+
+    def test(self, trials, path):
+        for ep in range(trials):
+            # collect data and update the policy
+            self.agent.load(path)
+            train_info = self.run_episode(evaluation=True)
+
+            train_info.update({'episodes': ep})
+            print({"ep": ep, **train_info})    

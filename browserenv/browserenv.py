@@ -26,12 +26,10 @@ class BrowserEnv:
         self.observer = Observer(self.b, self.collectData, self.load, self.save)
         self.init_steps()
 
-
     def init_steps(self):
         # TODO: Create Initializer
         page = 'file://' + os.getcwd() + '/resources/login/login.html'
         self.b.new_page(page)
-
 
     def reset(self):
         self.b.close_page()
@@ -39,10 +37,8 @@ class BrowserEnv:
         self.observer.reset()
         return self.observer.observe()
 
-
     def terminate(self):
         self.b.close_browser()
-
 
     def take_action(self, act, args, kwargs):
         try:
@@ -51,9 +47,11 @@ class BrowserEnv:
         except:
             return -1.0
 
+    def get_selected_action(self, act):
+        return self.load.get_action(act.argmax())
 
     def step(self, act):
-        selected_act = self.load.get_action(act.argmax())
+        selected_act = self.get_selected_action(act)
         act_r = self.take_action(selected_act['keyword'], selected_act['args'], {})
         obs, reward, done = self.observer.observe()
 
