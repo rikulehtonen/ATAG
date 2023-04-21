@@ -52,10 +52,8 @@ class BrowserEnv:
 
     def step(self, act):
         selected_act = self.get_selected_action(act)
-        act_r = self.take_action(selected_act['keyword'], selected_act['args'], {})
-        obs, reward, done = self.observer.observe()
+        act_reward = self.take_action(selected_act['keyword'], selected_act['args'], {})
+        obs, obs_reward, done = self.observer.observe()
+        reward = act_reward + obs_reward
 
-        if reward != None:
-            return obs, np.max([reward, act_r]), done
-        else:
-            return obs, act_r, done
+        return obs, reward, done

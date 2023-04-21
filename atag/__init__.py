@@ -118,11 +118,10 @@ class Atag:
                 print(self.env.get_selected_action(to_numpy(action)))
             reward_sum += reward
             timesteps += 1
-            print(obs)
+
         # Update the policy after one episode
         if not evaluation:
             info = self.agent.update()
-
             # Return stats of training
             info.update({'timesteps': timesteps,
                         'ep_reward': reward_sum,})

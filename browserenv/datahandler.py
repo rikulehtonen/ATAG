@@ -68,11 +68,12 @@ class DataSave:
     def __xpathGeneration(self, element):
         # TODO: Get all attributes automaticly
         xpath = "xpath=//{}".format(element['tag'])
-        attributes = ['id', 'name']
+        attributes = element.get('attributes')
         for attribute in attributes:
-            value = element[attribute]
-            if value != None:
-                xpath += "[@{}='{}']".format(attribute,value)
+            key = attribute.get('key')
+            value = attribute.get('value')
+            if "'" not in key and "'" not in value:
+                xpath += "[@{}='{}']".format(key, value)
 
         if element['text'] != None:
             xpath += "[contains(text(),'{}')]".format(element['text'])
