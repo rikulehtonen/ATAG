@@ -1,3 +1,4 @@
 [
-    {"keyword": "get_element_states", "args": ["xpath=//form[@id='myForm']", "AssertionOperator.contains", "visible"], "positive_reward": 2.0, "negative_reward": null, "is_done": true}
+    {"keyword": "get_element_states", "args": ["xpath=//div[@id='logininfo']", "AssertionOperator.contains", "visible"], "positive_reward": 2.0, "negative_reward": 0, "is_done": true},
+    {"keyword": "get_element_states", "args": ["xpath=//div[@id='loginFailed']", "AssertionOperator.contains", "visible"], "positive_reward": 0.2, "negative_reward": 0, "is_done": false}
 ]
