@@ -1,3 +1,3 @@
 [
-    {"keyword": "get_element_states", "args": ["xpath=//form[@id='myForm']", "AssertionOperator.contains", "visible"], "positive_reward": 2.0, "negative_reward": null}
+    {"keyword": "get_element_states", "args": ["xpath=//form[@id='myForm']", "AssertionOperator.contains", "visible"], "positive_reward": 2.0, "negative_reward": null, "is_done": true}
 ]
