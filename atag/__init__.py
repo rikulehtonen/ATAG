@@ -32,11 +32,11 @@ class Policy(nn.Module):
         super(Policy, self).__init__()
 
         self.nn = nn.Sequential(
-            layer_init(nn.Linear(state_dim, 64)),
-            nn.Tanh(),
-            layer_init(nn.Linear(64, 64)),
-            nn.Tanh(),
-            layer_init(nn.Linear(64, action_dim), std=0.01),
+            layer_init(nn.Linear(state_dim, 20)),
+            nn.ReLU(),
+            layer_init(nn.Linear(20, 20)),
+            nn.ReLU(),
+            layer_init(nn.Linear(20, action_dim))
         )
 
         self.actor_logstd = torch.nn.Parameter(torch.tensor([0.0], device=device)) 
@@ -64,16 +64,16 @@ class PG(object):
         action_probs = torch.stack(self.action_probs, dim=0).to(device).squeeze(-1) # shape: [batch_size,]
         rewards = torch.stack(self.rewards, dim=0).to(device).squeeze(-1) # shape [batch_size,]
         self.action_probs, self.rewards = [], [] # clean buffers
-        disc_rewards = discount_rewards(rewards,self.gamma)
+        disc_rewards = discount_rewards(rewards, self.gamma)
 
         # Normalize rewards
-        #disc_rewards=(disc_rewards-torch.mean(disc_rewards))/torch.std(disc_rewards)
+        #disc_rewards=(disc_rewards - torch.mean(disc_rewards)) / torch.std(disc_rewards)
         baseline = 0
-        loss = torch.mean(-1*(disc_rewards-baseline)*torch.t(action_probs)[0])
+        loss = torch.mean(-(disc_rewards - baseline) * torch.t(action_probs)[0])
 
+        self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-        self.optimizer.zero_grad()
 
         return {'logstd': self.policy.actor_logstd.cpu().detach().numpy()}
 

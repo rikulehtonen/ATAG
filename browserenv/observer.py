@@ -1,6 +1,7 @@
 from .datahandler import DataLoad, DataSave
 import time
 import numpy as np
+from Browser import AssertionOperator
 
 
 class Observer:
@@ -39,17 +40,27 @@ class Observer:
         
         return np.array([1 if e in scannedElements else 0 for e in elements])
 
+    def __parse_keyword(self,target):
+        keyword, args = target['keyword'], target['args']
+        if "AssertionOperator" in args[1]:
+            args[1] = getattr(AssertionOperator, args[1].split('.')[1])
+
+        return keyword, args
+
     def __observeTargets(self):
         reward_sum = [0] 
         for target in self.load.targets:
             try:
-                getattr(self.b, target['keyword'])(*target['args'], **{})
+                keyword, args = self.__parse_keyword(target)
+                getattr(self.b, keyword)(*args, **{})
+
                 reward_sum.append(target.get('positive_reward'))
                 self.done = target.get('is_done')
             except:
                 reward_sum.append(target.get('negative_reward'))
             
         reward_sum = sum(filter(None, reward_sum))
+        print(reward_sum)
         return reward_sum
 
     def __checkDone(self):
