@@ -39,7 +39,8 @@ class Policy(nn.Module):
             layer_init(nn.Linear(20, action_dim))
         )
 
-        self.actor_logstd = torch.nn.Parameter(torch.tensor([0.0], device=device)) 
+        self.actor_logstd = torch.nn.Parameter(torch.tensor([0.5], device=device))
+        #self.actor_logstd = torch.tensor([0.0], device=device)
 
     def forward(self, state):
         action_mean = self.nn(state)
@@ -135,7 +136,7 @@ class Atag:
             train_info = self.run_episode()
             
             # Update results
-            if (ep+1) % 10 == 0:
+            if (ep+1) % 100 == 0:
                 self.agent.save('results/model/' + f'episode_{ep+1}_params.pt')
             train_info.update({'episodes': ep})
             print({"ep": ep, **train_info})

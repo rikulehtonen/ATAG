@@ -3,7 +3,7 @@ from browserenv import BrowserEnv
 
 
 def main():
-    episodes = 500
+    episodes = 10000
     browserEnv = BrowserEnv(collectData=True)
     atag_browser = Atag(browserEnv, 0.01, 0.99)
     atag_browser.train(episodes)

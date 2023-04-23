@@ -9,7 +9,7 @@ from .datahandler import DataLoad, DataSave
 
 class BrowserEnv:
     def __init__(self, collectData=False, folder='config/'):
-        self.b = Browser(timeout="1.2 s", retry_assertions_for="500 ms")
+        self.b = Browser(timeout="200 ms", retry_assertions_for="60 ms")
         self.b.new_browser(headless=False, browser=SupportedBrowsers.chromium)
         self.b.new_context(
             acceptDownloads=True,
@@ -43,9 +43,9 @@ class BrowserEnv:
     def take_action(self, act, args, kwargs):
         try:
             getattr(self.b, act)(*args, **kwargs)
-            return -0.1
-        except:
             return -1.0
+        except:
+            return -10.0
 
     def get_selected_action(self, act):
         return self.load.get_action(act.argmax())
