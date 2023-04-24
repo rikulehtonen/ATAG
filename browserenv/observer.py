@@ -7,7 +7,7 @@ from Browser import AssertionOperator
 class Observer:
     def __init__(self, browser, collectData, load, save):
         self.obsCount = 0
-        self.obsLimit = 7
+        self.obsLimit = 11
         self.done = False
         self.browser = browser
         self.collectData = collectData

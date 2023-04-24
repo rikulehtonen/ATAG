@@ -32,14 +32,14 @@ class Policy(nn.Module):
         super(Policy, self).__init__()
 
         self.nn = nn.Sequential(
-            layer_init(nn.Linear(state_dim, 20)),
+            layer_init(nn.Linear(state_dim, 64)),
             nn.ReLU(),
-            layer_init(nn.Linear(20, 20)),
+            layer_init(nn.Linear(64, 64)),
             nn.ReLU(),
-            layer_init(nn.Linear(20, action_dim))
+            layer_init(nn.Linear(64, action_dim))
         )
 
-        self.actor_logstd = torch.nn.Parameter(torch.tensor([0.5], device=device))
+        self.actor_logstd = torch.nn.Parameter(torch.tensor([0.1], device=device))
         #self.actor_logstd = torch.tensor([0.0], device=device)
 
     def forward(self, state):

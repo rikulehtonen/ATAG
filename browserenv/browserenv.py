@@ -43,7 +43,7 @@ class BrowserEnv:
     def take_action(self, act, args, kwargs):
         try:
             getattr(self.b, act)(*args, **kwargs)
-            return -1.0
+            return -3.0
         except:
             return -10.0
 
