@@ -40,11 +40,13 @@ class Observer:
         
         return np.array([1 if e in scannedElements else 0 for e in elements])
 
+
     def __parse_keyword(self,target):
         keyword, args = target['keyword'], target['args'].copy()
         if "AssertionOperator" in args[1]:
             args[1] = getattr(AssertionOperator, args[1].split('.')[1])
         return keyword, args
+
 
     def __observeTargets(self):
         reward_sum = [0] 
@@ -60,12 +62,15 @@ class Observer:
         reward_sum = sum(filter(None, reward_sum))
         return reward_sum
 
+
     def __checkDone(self):
         if self.obsCount >= self.obsLimit:
             self.done = True
 
+
     def __checkReady(self):
         time.sleep(0.05)
+        
 
     def observe(self):
         self.__checkReady()
