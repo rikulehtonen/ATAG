@@ -33,13 +33,14 @@ class Policy(nn.Module):
 
         self.nn = nn.Sequential(
             layer_init(nn.Linear(state_dim, 64)),
-            nn.Tanh(),
+            nn.ReLU(),
             layer_init(nn.Linear(64, 64)),
-            nn.Tanh(),
-            layer_init(nn.Linear(64, action_dim), std=0.01),
+            nn.ReLU(),
+            layer_init(nn.Linear(64, action_dim))
         )
 
-        self.actor_logstd = torch.nn.Parameter(torch.tensor([0.0], device=device)) 
+        self.actor_logstd = torch.nn.Parameter(torch.tensor([0.1], device=device))
+        #self.actor_logstd = torch.tensor([0.0], device=device)
 
     def forward(self, state):
         action_mean = self.nn(state)
@@ -64,16 +65,16 @@ class PG(object):
         action_probs = torch.stack(self.action_probs, dim=0).to(device).squeeze(-1) # shape: [batch_size,]
         rewards = torch.stack(self.rewards, dim=0).to(device).squeeze(-1) # shape [batch_size,]
         self.action_probs, self.rewards = [], [] # clean buffers
-        disc_rewards = discount_rewards(rewards,self.gamma)
+        disc_rewards = discount_rewards(rewards, self.gamma)
 
         # Normalize rewards
-        #disc_rewards=(disc_rewards-torch.mean(disc_rewards))/torch.std(disc_rewards)
+        #disc_rewards=(disc_rewards - torch.mean(disc_rewards)) / torch.std(disc_rewards)
         baseline = 0
-        loss = torch.mean(-1*(disc_rewards-baseline)*torch.t(action_probs)[0])
+        loss = torch.mean(-(disc_rewards - baseline) * torch.t(action_probs)[0])
 
+        self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-        self.optimizer.zero_grad()
 
         return {'logstd': self.policy.actor_logstd.cpu().detach().numpy()}
 
@@ -135,7 +136,7 @@ class Atag:
             train_info = self.run_episode()
             
             # Update results
-            if (ep+1) % 10 == 0:
+            if (ep+1) % 100 == 0:
                 self.agent.save('results/model/' + f'episode_{ep+1}_params.pt')
             train_info.update({'episodes': ep})
             print({"ep": ep, **train_info})
