@@ -41,6 +41,12 @@ class DataSave:
         self.clickActions = ['A', 'BUTTON']
         self.typeActions = ['INPUT']
         self.typeWordList = ['testaaja', 'testi', 'salasana']
+        self.createFolders()
+
+    def createFolders(self):
+        path = self.folder + 'temp/'
+        if not os.path.exists(path):
+            os.makedirs(path)
 
     def __loadData(self, fileName):
         with open(fileName, 'r') as f:
@@ -57,9 +63,6 @@ class DataSave:
 
         with open(elementsFile, 'w') as f:
             json.dump(self.elements, f)
-
-
-
 
     def __appendToActions(self, action):
         if action != None and action not in self.actions:
