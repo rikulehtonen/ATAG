@@ -8,7 +8,7 @@ from .observer import Observer
 from .datahandler import DataLoad, DataSave
 
 class BrowserEnv:
-    def __init__(self, collectData=False, folder='config/'):
+    def __init__(self, collectData=False, resourcePath=''):
         self.b = Browser(timeout="200 ms", retry_assertions_for="60 ms")
         self.b.new_browser(headless=False, browser=SupportedBrowsers.chromium)
         self.b.new_context(
@@ -16,10 +16,11 @@ class BrowserEnv:
             viewport={"width": 700, "height": 500}
         )
 
+        self.resourcePath = resourcePath
         self.collectData = collectData
 
-        self.load = DataLoad(folder)
-        self.save = DataSave(folder)
+        self.load = DataLoad(self.resourcePath + 'config/')
+        self.save = DataSave(self.resourcePath + 'config/')
         self.action_dim = self.load.lenActions()
         self.state_dim = self.load.lenElements()
 
@@ -28,7 +29,7 @@ class BrowserEnv:
 
     def init_steps(self):
         # TODO: Create Initializer
-        page = 'file://' + os.getcwd() + '/resources/login/login.html'
+        page = 'file://' + os.getcwd() + '/login.html'
         self.b.new_page(page)
 
     def reset(self):

@@ -1,7 +1,0 @@
-[
-    {"keyword": "click", "args": ["xpath=//button[@id='loginBox']"]},
-    {"keyword": "click", "args": ["xpath=//button[@type='submit']"]},
-    {"keyword": "click", "args": ["xpath=//button[@class='cancelbtn']"]},
-    {"keyword": "type_text", "args": ["xpath=//input[@name='uname']","testaaja"]},
-    {"keyword": "type_text", "args": ["xpath=//input[@name='psw']","testi"]}
-]

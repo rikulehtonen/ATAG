@@ -25,6 +25,9 @@ def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
     torch.nn.init.constant_(layer.bias, bias_const)
     return layer
 
+def createFolders(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 # This class defines the neural network policy
 class Policy(nn.Module):
@@ -95,16 +98,20 @@ class PG(object):
         self.rewards.append(torch.tensor([reward]))
 
     def save(self, filepath):
-        torch.save(self.policy.state_dict(), filepath)
+        if filepath != None:
+            torch.save(self.policy.state_dict(), filepath)
 
     def load(self, filepath):
-        self.policy.load_state_dict(torch.load(filepath))
+        if filepath != None:
+            self.policy.load_state_dict(torch.load(filepath))
 
 
 class Atag:
-    def __init__(self, env, lr, gamma):
+    def __init__(self, env, lr, gamma, model=None):
         self.env = env
         self.agent = PG(env.state_dim, env.action_dim, lr, gamma)
+        self.agent.load(model)
+        createFolders(self.env.resourcePath + 'results/model/')
 
     def run_episode(self, evaluation=False):
         reward_sum, timesteps, done = 0, 0, False
@@ -137,7 +144,7 @@ class Atag:
             
             # Update results
             if (ep+1) % 100 == 0:
-                self.agent.save('results/model/' + f'episode_{ep+1}_params.pt')
+                self.agent.save(self.env.resourcePath + 'results/model/' + f'episode_{ep+1}_params.pt')
             train_info.update({'episodes': ep})
             print({"ep": ep, **train_info})
 

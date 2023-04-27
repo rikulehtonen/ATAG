@@ -4,6 +4,7 @@ driver
 __pycache__
 .DS_Store
 results
+temp
 
 # Logs
 playwright-log.txt
