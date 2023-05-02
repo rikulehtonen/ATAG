@@ -1,12 +1,15 @@
+import sys
+import os
+sys.path.insert(0, '../../')
+
 from atag import Atag
 from browserenv import BrowserEnv
-
 
 def main():
     browserEnv = BrowserEnv()
     atag_browser = Atag(browserEnv, 0.01, 0.99)
 
-    atag_browser.test(1, 'results/model/episode_1800_params.pt')
+    atag_browser.test(1, 'model.pt')
 
     browserEnv.terminate()
 

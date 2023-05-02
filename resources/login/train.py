@@ -9,7 +9,7 @@ from browserenv import BrowserEnv
 def main():
     episodes = 10000
     browserEnv = BrowserEnv(collectData=True, resourcePath='')
-    atag_browser = Atag(env=browserEnv, lr=0.001, gamma=0.99, model=None)
+    atag_browser = Atag(env=browserEnv, lr=0.001, gamma=0.99, model='model.pt')
 
     atag_browser.train(episodes)
     browserEnv.terminate()

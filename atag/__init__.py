@@ -77,6 +77,7 @@ class PG(object):
 
         self.optimizer.zero_grad()
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.policy.parameters(), 0.5)
         self.optimizer.step()
 
         return {'logstd': self.policy.actor_logstd.cpu().detach().numpy()}
