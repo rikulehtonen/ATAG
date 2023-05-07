@@ -1,3 +1,3 @@
 from .nn import NeuralNet
-from .agent import PG
+from .ppo import PPO
 from .atag import Atag

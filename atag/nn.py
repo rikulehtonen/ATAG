@@ -20,19 +20,18 @@ class NeuralNet(nn.Module):
         super(NeuralNet, self).__init__()
 
         self.nn = nn.Sequential(
-            layer_init(nn.Linear(state_dim, 64)),
+            nn.Linear(state_dim, 512),
             nn.ReLU(),
-            layer_init(nn.Linear(64, 64)),
+            nn.Linear(512, 256),
             nn.ReLU(),
-            layer_init(nn.Linear(64, action_dim))
+            nn.Linear(256, 64),
+            nn.ReLU(),
+            nn.Linear(64, action_dim)
         )
 
-        self.actor_logstd = torch.nn.Parameter(torch.tensor([0.1], device=device))
-        #self.actor_logstd = torch.tensor([0.0], device=device)
+        self.log_std = torch.as_tensor(np.ones(action_dim, dtype=float) * 1.0)
+        #self.log_std = torch.nn.Parameter(torch.as_tensor(self.log_std))
 
     def forward(self, state):
-        action_mean = self.nn(state)
-        action_logstd = self.actor_logstd.expand_as(action_mean)
-        action_std = torch.exp(action_logstd)
-        probs = Normal(action_mean, action_std)
-        return probs
+        if not isinstance(state, torch.Tensor): state = torch.tensor(state, dtype=torch.float)
+        return self.nn(state)
