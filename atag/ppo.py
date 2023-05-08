@@ -47,53 +47,55 @@ class PPO(object):
         batch_log_probs = []
         batch_rewards = []
 
-        for total_iterations in range(self.params.episode_max_timesteps):
+        for batch_iterations in range(self.params.batch_timesteps):
             ep_rewards = []
             #reward_sum, timesteps, done = 0, 0, False
             obs, _, _ = self.env.reset()
             done = False
 
-            while not done:
-
+            for total_iterations in range(self.params.episode_max_timesteps):
                 batch_obs.append(obs)
-
                 action, act_logprob = self.get_action(obs, evaluation)
-                obs, reward, done = self.env.step(to_numpy(action))
+                obs, reward, done = self.env.step(action)
 
                 ep_rewards.append(reward)
                 batch_actions.append(action)
                 batch_log_probs.append(act_logprob)
 
+                if done: break
+
             batch_rewards.append(ep_rewards)
 
-            batch_obs = torch.tensor(batch_obs, dtype=torch.float)
-            batch_actions = torch.tensor(batch_actions, dtype=torch.float)
-            batch_log_probs = torch.tensor(batch_log_probs, dtype=torch.float)
+            batch_obs_s = torch.tensor(batch_obs, dtype=torch.float)
+            batch_actions_s = torch.tensor(batch_actions, dtype=torch.float)
+            batch_log_probs_s = torch.tensor(batch_log_probs, dtype=torch.float)
 
-            V, _ = self.get_value(batch_obs, batch_actions)
+            V, _ = self.get_value(batch_obs_s, batch_actions_s)
 
             A = self.generalized_advantage_estimate(batch_rewards, V)
             
             R = A + V.detach() 
             
-            batch_obs = torch.split(batch_obs, 1217)
-            batch_actions = torch.split(batch_actions, 1217)
-            batch_log_probs = torch.split(batch_log_probs, 1217)
-            
-            V = torch.split(V, 1217)
-            A = torch.split(A, 1217)
-            R = torch.split(R, 1217)
+            division = 3
 
-            inds = np.arange(4)
+            batch_obs_s = torch.split(batch_obs_s, division)
+            batch_actions_s = torch.split(batch_actions_s, division)
+            batch_log_probs_s = torch.split(batch_log_probs_s, division)
+            
+            V = torch.split(V, division)
+            A = torch.split(A, division)
+            R = torch.split(R, division)
+
+            inds = np.arange(round(len(A) / division) - 1)
             np.random.shuffle(inds)
 
             for _ in range(self.params.iteration_epochs):
                 for mini_batch in inds:
                     
                     AM = (A[mini_batch] - A[mini_batch].mean()) / (A[mini_batch].std() + 1e-10)
-                    V, curr_log_probs = self.get_value(batch_obs[mini_batch], batch_actions[mini_batch])
+                    V, curr_log_probs = self.get_value(batch_obs_s[mini_batch], batch_actions_s[mini_batch])
 
-                    ratio = torch.exp(curr_log_probs - batch_log_probs[mini_batch])
+                    ratio = torch.exp(curr_log_probs - batch_log_probs_s[mini_batch])
                     actor_loss = (-torch.min(ratio * AM, torch.clamp(ratio, 1 - self.params.clip, 1 + self.params.clip) * AM)).mean()
                     critic_loss = nn.MSELoss()(V, R[mini_batch])
 
@@ -107,7 +109,6 @@ class PPO(object):
                     torch.nn.utils.clip_grad_norm_(self.critic.parameters(), 0.5)
                     self.critic_optimizer.step()
             
-
             ep_reward = np.mean([np.sum(ep_rewards) for ep_rewards in batch_rewards])
             #print(total_iterations, ep_reward)
 
@@ -115,29 +116,8 @@ class PPO(object):
             #    torch.save(self.actor.state_dict(), f'{self.params.save_path}_actor_{total_iterations}.pt')
             #    torch.save(self.critic.state_dict(), f'{self.params.save_path}_critic_{total_iterations}.pt')
 
-            return {'timesteps': 0, 'ep_reward': ep_reward}
+        return {'timesteps': 0, 'ep_reward': ep_reward}
 
-        """
-        while not done:
-            action, act_logprob = self.agent.get_action(obs, evaluation)
-            obs, reward, done = self.env.step(to_numpy(action))
-            if not evaluation:
-                self.agent.record(act_logprob, reward)
-            else:
-                print(self.env.get_selected_action(to_numpy(action)))
-            reward_sum += reward
-            timesteps += 1
-
-        # Update the policy after one episode
-        if not evaluation:
-            info = self.agent.update()
-            # Return stats of training
-            info.update({'timesteps': timesteps,
-                        'ep_reward': reward_sum,})
-            return info
-        
-        return {}
-        """
 
     def generalized_advantage_estimate(self, batch_rewards, V):
         i = len(V) - 1
