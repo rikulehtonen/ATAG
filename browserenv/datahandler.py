@@ -8,9 +8,7 @@ class DataLoad:
         self.elements = None
         self.actions = None
         self.targets = None
-
         self.getFromFiles()
-
 
     def lenElements(self):
         return len(self.elements)
@@ -32,7 +30,6 @@ class DataLoad:
         return self.actions[index]
 
 
-
 class DataSave:
     def __init__(self, folder):
         self.folder = folder
@@ -40,6 +37,7 @@ class DataSave:
         self.actions = []
         self.clickActions = ['A', 'BUTTON']
         self.typeActions = ['INPUT']
+        self.ignoreElements = ['DIV']
         self.typeWordList = ['testaaja', 'testi', 'salasana']
         self.createFolders()
 
@@ -58,7 +56,7 @@ class DataSave:
             self.elements = self.__loadData(elementsFile)
 
         for e in elements:
-            if e not in self.elements:
+            if e not in self.elements and e['tag'] not in self.ignoreElements:
                 self.elements.append(e)
 
         with open(elementsFile, 'w') as f:

@@ -15,6 +15,7 @@ const ProductCard = ({ product }) => {
       <button
         onClick={() => dispatch(addToCart(product))}
         className={styles.button}
+        product-name={product.product.replace(/ /g,"_")}
       >
         Add to Cart
       </button>
