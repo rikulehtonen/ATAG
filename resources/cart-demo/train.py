@@ -9,7 +9,7 @@ from browserenv import BrowserEnv
 parameters = {
     'lr': 1e-4,
     'max_timesteps': 200000000,
-    'batch_timesteps': 10,
+    'batch_timesteps': 5,
     'episode_max_timesteps': 12,
     'iteration_epochs': 10,
     'gamma': 0.99,

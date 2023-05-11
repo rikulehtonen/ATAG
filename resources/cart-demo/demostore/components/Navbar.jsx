@@ -6,7 +6,7 @@ const Navbar = () => {
   const cart = useSelector((state) => state.cart);
 
   const getItemsCount = () => {
-    return cart.reduce((accumulator, item) => accumulator + item.quantity, 0);
+    return "Cart (" + cart.reduce((accumulator, item) => accumulator + item.quantity, 0) + ")"
   };
 
   return (
@@ -21,7 +21,7 @@ const Navbar = () => {
         </li>
         <li className={styles.navlink}>
           <Link href="/cart">
-            <a>Cart ({getItemsCount()})</a>
+            <a>{getItemsCount()}</a>
           </Link>
         </li>
       </ul>

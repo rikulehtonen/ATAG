@@ -54,7 +54,7 @@ const CartPage = () => {
               <p>$ {(item.quantity * item.price).toFixed(2)}</p>
             </div>
           ))}
-          <h2>Grand Total: $ {getTotalPrice().toFixed(2)}</h2>
+          <h2>{"Grand Total: $ " + getTotalPrice().toFixed(2)}</h2>
         </>
       )}
     </div>
