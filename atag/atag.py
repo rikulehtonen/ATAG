@@ -26,8 +26,8 @@ class Atag:
             train_info = self.agent.run_episode()
             
             # Update results
-            if (ep+1) % 100 == 0:
-                self.agent.save(self.env.resourcePath + 'results/model/' + f'episode_{ep+1}_params.pt')
+            if (ep+1) % 1 == 0:
+                self.agent.save(self.env.resourcePath + 'results/model/', ep)
 
             train_info.update({'episodes': ep})
             print({"ep": ep, **train_info})

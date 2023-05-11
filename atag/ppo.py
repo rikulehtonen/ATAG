@@ -5,6 +5,7 @@ from torch import nn
 from torch.distributions import Normal
 import numpy as np
 from .nn import NeuralNet
+import wandb
 
 # Use CUDA for storing tensors / calculations if it's available
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -40,6 +41,8 @@ class PPO(object):
         self.action_probs = []
         self.rewards = []
 
+        #wandb.init(project="ATAG")
+
 
     def run_episode(self, evaluation=False):
         batch_obs = []
@@ -61,6 +64,7 @@ class PPO(object):
                 ep_rewards.append(reward)
                 batch_actions.append(action)
                 batch_log_probs.append(act_logprob)
+                #wandb.log({"ep_reward": reward})
 
                 if done: break
 
@@ -110,11 +114,6 @@ class PPO(object):
                     self.critic_optimizer.step()
             
             ep_reward = np.mean([np.sum(ep_rewards) for ep_rewards in batch_rewards])
-            #print(total_iterations, ep_reward)
-
-            #if total_iterations % self.params.save_frequency == 0:
-            #    torch.save(self.actor.state_dict(), f'{self.params.save_path}_actor_{total_iterations}.pt')
-            #    torch.save(self.critic.state_dict(), f'{self.params.save_path}_critic_{total_iterations}.pt')
 
         return {'timesteps': 0, 'ep_reward': ep_reward}
 
@@ -155,45 +154,10 @@ class PPO(object):
         return V, log_probs
 
 
-    """
-    def update(self,):
-        # Prepare dataset used to update policy
-        action_probs = torch.stack(self.action_probs, dim=0).to(device).squeeze(-1) # shape: [batch_size,]
-        rewards = torch.stack(self.rewards, dim=0).to(device).squeeze(-1) # shape [batch_size,]
-        self.action_probs, self.rewards = [], [] # clean buffers
-        disc_rewards = discount_rewards(rewards, self.gamma)
-
-        # Normalize rewards
-        #disc_rewards=(disc_rewards - torch.mean(disc_rewards)) / torch.std(disc_rewards)
-        baseline = 0
-        loss = torch.mean(-(disc_rewards - baseline) * torch.t(action_probs)[0])
-
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
-
-        return {'logstd': self.policy.actor_logstd.cpu().detach().numpy()}
-
-    def get_action(self, observation, evaluation=False):
-        # if observation.ndim == 1: observation = observation[None]
-        # print(observation)
-        x = torch.from_numpy(observation).float().to(device)
-        distrib=self.policy.forward(x)
-        action = distrib.mean if evaluation else distrib.sample((1,))[0]
-        act_logprob = distrib.log_prob(action)
-        
-        #if observation.ndim == 1: action = action[0]
-        return action, act_logprob
-    """
-
-    def record(self, action_prob, reward):
-        """ Store agent's and env's outcomes to update the agent."""
-        self.action_probs.append(action_prob)
-        self.rewards.append(torch.tensor([reward]))
-
-    def save(self, filepath):
+    def save(self, filepath, total_iterations):
         if filepath != None:
-            torch.save(self.policy.state_dict(), filepath)
+            torch.save(self.actor.state_dict(), f'{filepath}{total_iterations}_actor.pt')
+            torch.save(self.critic.state_dict(), f'{filepath}{total_iterations}_critic.pt')
 
     def load(self, filepath):
         if filepath != None:
