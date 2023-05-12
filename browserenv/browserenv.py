@@ -32,7 +32,7 @@ class BrowserEnv:
         page = 'http://localhost:3000/'
         self.b.set_browser_timeout("5 s")
         self.b.new_page(page)
-        self.b.set_browser_timeout("100 ms")
+        self.b.set_browser_timeout("700 ms")
 
     def reset(self):
         self.b.close_page()

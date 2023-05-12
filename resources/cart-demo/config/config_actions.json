@@ -1,6 +1,6 @@
 [{"keyword": "click", "args": ["xpath=//A[@href='/'][contains(text(),'Home')]"]}, 
 {"keyword": "click", "args": ["xpath=//A[@href='/shop'][contains(text(),'Shop')]"]}, 
-{"keyword": "click", "args": ["xpath=//A[@href='/cart'][contains(text(),'Cart')]"]}, 
+{"keyword": "click", "args": ["xpath=//A[@href='/cart']//*[contains(text(),'Cart')]"]}, 
 {"keyword": "click", "args": ["xpath=//A[@href='/category/xbox'][contains(text(),'XboxSHOP NOW')]"]}, 
 {"keyword": "click", "args": ["xpath=//A[@href='/category/ps5'][contains(text(),'PS5SHOP NOW')]"]}, 
 {"keyword": "click", "args": ["xpath=//A[@href='/category/switch'][contains(text(),'SwitchSHOP NOW')]"]}, 
@@ -33,7 +33,6 @@
 {"keyword": "click", "args": ["xpath=//BUTTON[@class='ProductCard_button__vt_QY'][@product-name='Gaming_Keyboard'][contains(text(),'Add to Cart')]"]}, 
 {"keyword": "click", "args": ["xpath=//BUTTON[@class='ProductCard_button__vt_QY'][@product-name='Gaming_Mouse'][contains(text(),'Add to Cart')]"]}, 
 {"keyword": "click", "args": ["xpath=//BUTTON[@class='ProductCard_button__vt_QY'][@product-name='Switch_Joy-Con'][contains(text(),'Add to Cart')]"]}, 
-{"keyword": "click", "args": ["xpath=//A[@href='/cart'][contains(text(),'Cart (1)')]"]}, 
 {"keyword": "click", "args": ["xpath=//BUTTON[contains(text(),'+')]"]}, 
 {"keyword": "click", "args": ["xpath=//BUTTON[contains(text(),'-')]"]}, 
 {"keyword": "click", "args": ["xpath=//BUTTON[contains(text(),'x')]"]}]

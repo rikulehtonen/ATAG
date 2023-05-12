@@ -6,6 +6,7 @@ from torch.distributions import Normal
 import numpy as np
 from .nn import NeuralNet
 import wandb
+import time
 
 # Use CUDA for storing tensors / calculations if it's available
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -41,7 +42,8 @@ class PPO(object):
         self.action_probs = []
         self.rewards = []
 
-        #wandb.init(project="ATAG")
+        wandb.init(project="ATAG", entity="rikulehtonen")
+        self.start_time = time.time()
 
 
     def run_episode(self, evaluation=False):
@@ -52,7 +54,6 @@ class PPO(object):
 
         for batch_iterations in range(self.params.batch_timesteps):
             ep_rewards = []
-            #reward_sum, timesteps, done = 0, 0, False
             obs, _, _ = self.env.reset()
             done = False
 
@@ -64,7 +65,6 @@ class PPO(object):
                 ep_rewards.append(reward)
                 batch_actions.append(action)
                 batch_log_probs.append(act_logprob)
-                #wandb.log({"ep_reward": reward})
 
                 if done: break
 
@@ -114,6 +114,7 @@ class PPO(object):
                     self.critic_optimizer.step()
             
             ep_reward = np.mean([np.sum(ep_rewards) for ep_rewards in batch_rewards])
+            wandb.log({"ep_reward": ep_reward, "time_d": (time.time() - self.start_time), "is_done": (float(done))})
 
         return {'timesteps': 0, 'ep_reward': ep_reward}
 

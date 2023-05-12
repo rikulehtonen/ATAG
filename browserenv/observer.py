@@ -53,7 +53,8 @@ class Observer:
                 keyword, args = self.__parse_keyword(target)
                 getattr(self.browser, keyword)(*args, **{})
                 reward_sum.append(target.get('positive_reward'))
-                self.done = target.get('is_done')
+                if not self.done:
+                    self.done = target.get('is_done')
             except AssertionError:
                 reward_sum.append(target.get('negative_reward'))
 
