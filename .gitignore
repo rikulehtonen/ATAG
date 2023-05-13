@@ -6,6 +6,7 @@ __pycache__
 results
 temp
 wandb
+.next
 
 # Logs
 playwright-log.txt
