@@ -1,0 +1,6 @@
+[
+    {"keyword": "get_element_states", "args": ["//*[starts-with(., 'Grand Total: $') and number(substring-after(., 'Grand Total: $ ')) > 100]", "AssertionOperator.contains", "visible"], "positive_reward": 90.0, "negative_reward": 0, "is_done": true},
+    {"keyword": "get_element_states", "args": ["//*[starts-with(., 'Grand Total: $') and number(substring-after(., 'Grand Total: $ ')) > 50]", "AssertionOperator.contains", "visible"], "positive_reward": 60.0, "negative_reward": 0, "is_done": true},
+    {"keyword": "get_element_states", "args": ["//div[@class='CartPage_body__9xgUX']//*[contains(text(),'Fortnite')]", "AssertionOperator.contains", "visible"], "positive_reward": 40.0, "negative_reward": 0, "is_done": false},
+    {"keyword": "get_element_states", "args": ["//A[contains(text(),'Cart') and not(contains(text(),'Cart (0)'))]", "AssertionOperator.contains", "visible"], "positive_reward": 6.0, "negative_reward": 0, "is_done": false}
+]

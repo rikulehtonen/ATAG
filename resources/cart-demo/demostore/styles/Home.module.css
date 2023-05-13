@@ -1,0 +1,27 @@
+.container {
+  padding: 0 2rem;
+}
+
+.frontcat {
+  display: grid;
+  grid-template-columns: auto auto auto;
+}
+
+.small {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.large {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media screen and (max-width: 600px) {
+  .small {
+    grid-template-columns: 1fr;
+  }
+  .large {
+    grid-template-columns: 1fr;
+  }
+}

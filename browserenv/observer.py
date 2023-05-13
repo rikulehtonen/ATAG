@@ -6,8 +6,6 @@ from Browser import AssertionOperator
 
 class Observer:
     def __init__(self, browser, collectData, load, save):
-        self.obsCount = 0
-        self.obsLimit = 11
         self.done = False
         self.browser = browser
         self.collectData = collectData
@@ -55,7 +53,8 @@ class Observer:
                 keyword, args = self.__parse_keyword(target)
                 getattr(self.browser, keyword)(*args, **{})
                 reward_sum.append(target.get('positive_reward'))
-                self.done = target.get('is_done')
+                if not self.done:
+                    self.done = target.get('is_done')
             except AssertionError:
                 reward_sum.append(target.get('negative_reward'))
 
@@ -63,20 +62,12 @@ class Observer:
         return reward_sum
 
 
-    def __checkDone(self):
-        if self.obsCount >= self.obsLimit:
-            self.done = True
-
-
     def __checkReady(self):
         time.sleep(0.05)
-        
 
     def observe(self):
         self.__checkReady()
         obs = self.__observeElements()
         reward = self.__observeTargets()
-        self.__checkDone()
-        self.obsCount += 1
 
         return obs, reward, self.done

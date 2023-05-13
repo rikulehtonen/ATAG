@@ -5,6 +5,7 @@ __pycache__
 .DS_Store
 results
 temp
+wandb
 
 # Logs
 playwright-log.txt

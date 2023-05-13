@@ -9,7 +9,7 @@ from .datahandler import DataLoad, DataSave
 
 class BrowserEnv:
     def __init__(self, collectData=False, resourcePath=''):
-        self.b = Browser(timeout="200 ms", retry_assertions_for="60 ms")
+        self.b = Browser(timeout="3000 ms", retry_assertions_for="10 ms", strict=False)
         self.b.new_browser(headless=False, browser=SupportedBrowsers.chromium)
         self.b.new_context(
             acceptDownloads=True,
@@ -29,8 +29,10 @@ class BrowserEnv:
 
     def init_steps(self):
         # TODO: Create Initializer
-        page = 'file://' + os.getcwd() + '/login.html'
+        page = 'http://localhost:3000/'
+        self.b.set_browser_timeout("5 s")
         self.b.new_page(page)
+        self.b.set_browser_timeout("700 ms")
 
     def reset(self):
         self.b.close_page()
@@ -44,9 +46,9 @@ class BrowserEnv:
     def take_action(self, act, args, kwargs):
         try:
             getattr(self.b, act)(*args, **kwargs)
-            return -3.0
-        except:
             return -10.0
+        except:
+            return -20.0
 
     def get_selected_action(self, act):
         return self.load.get_action(act.argmax())
