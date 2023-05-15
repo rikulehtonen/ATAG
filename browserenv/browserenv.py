@@ -8,47 +8,34 @@ from .observer import Observer
 from .datahandler import DataLoad, DataSave
 
 class BrowserEnv:
-    def __init__(self, collectData=False, resourcePath=''):
-        self.b = Browser(timeout="3000 ms", retry_assertions_for="10 ms", strict=False)
-        self.b.new_browser(headless=False, browser=SupportedBrowsers.chromium)
-        self.b.new_context(
-            acceptDownloads=True,
-            viewport={"width": 700, "height": 500}
-        )
+    def __init__(self, config):
 
-        self.resourcePath = resourcePath
-        self.collectData = collectData
+        self.config = config
 
-        self.load = DataLoad(self.resourcePath + 'config/')
-        self.save = DataSave(self.resourcePath + 'config/')
+        self.load = DataLoad(self.config)
+        self.save = DataSave(self.config)
         self.action_dim = self.load.lenActions()
         self.state_dim = self.load.lenElements()
 
-        self.observer = Observer(self.b, self.collectData, self.load, self.save)
-        self.init_steps()
-
-    def init_steps(self):
-        # TODO: Create Initializer
-        page = 'http://localhost:3000/'
-        self.b.set_browser_timeout("5 s")
-        self.b.new_page(page)
-        self.b.set_browser_timeout("700 ms")
+        self.test_env = self.config.setup_env()
+        self.observer = Observer(self.test_env, self.config, self.load, self.save)
+        self.config.setup_test()
 
     def reset(self):
-        self.b.close_page()
-        self.init_steps()
+        self.config.teardown_test()
+        self.config.setup_test()
         self.observer.reset()
         return self.observer.observe()
 
     def terminate(self):
-        self.b.close_browser()
+        self.config.teardown_test()
 
     def take_action(self, act, args, kwargs):
         try:
-            getattr(self.b, act)(*args, **kwargs)
-            return -10.0
+            getattr(self.test_env, act)(*args, **kwargs)
+            return self.config.env_parameters.get('passed_action_cost')
         except:
-            return -20.0
+            return self.config.env_parameters.get('failed_action_cost')
 
     def get_selected_action(self, act):
         return self.load.get_action(act.argmax())

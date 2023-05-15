@@ -11,11 +11,6 @@ import time
 # Use CUDA for storing tensors / calculations if it's available
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-class Parameters(dict):
-    __getattr__ = dict.get
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
-
 def to_numpy(tensor):
     return tensor.squeeze(0).cpu().detach().numpy()
 
@@ -29,8 +24,8 @@ def discount_rewards(r, gamma):
 
 
 class PPO(object):
-    def __init__(self, env, state_dim, action_dim, **params):
-        self.params = Parameters(params)
+    def __init__(self, env, state_dim, action_dim, params):
+        self.params = params
 
         self.actor = NeuralNet(state_dim, action_dim)
         self.critic = NeuralNet(state_dim, 1)
@@ -42,7 +37,7 @@ class PPO(object):
         self.action_probs = []
         self.rewards = []
 
-        wandb.init(project="ATAG", entity="rikulehtonen")
+        #wandb.init(project="ATAG", entity="rikulehtonen")
         self.start_time = time.time()
 
 
@@ -114,7 +109,7 @@ class PPO(object):
                     self.critic_optimizer.step()
             
             ep_reward = np.mean([np.sum(ep_rewards) for ep_rewards in batch_rewards])
-            wandb.log({"ep_reward": ep_reward, "time_d": (time.time() - self.start_time), "is_done": (float(done))})
+            #wandb.log({"ep_reward": ep_reward, "time_d": (time.time() - self.start_time), "is_done": (float(done))})
 
         return {'timesteps': 0, 'ep_reward': ep_reward}
 

@@ -4,8 +4,9 @@ sys.path.insert(0, '../../')
 
 from atag import Atag
 from browserenv import BrowserEnv
+from config.atag_config import Atag_config
 
-
+#Parameters for Atag & algorithm
 parameters = {
     'lr': 1e-4,
     'max_timesteps': 200000000,
@@ -19,11 +20,15 @@ parameters = {
 }
 
 def main():
-    episodes = 10000
-    browserEnv = BrowserEnv(collectData=True, resourcePath='')
+    # Config for browserEnvironment
+    config = Atag_config()
+    # Test environment for Browser library
+    browserEnv = BrowserEnv(config)
+    # ML algorithm for test generation
     atag_browser = Atag(env=browserEnv, **parameters)
 
-    atag_browser.train(episodes)
+    # Train 
+    atag_browser.train()
     browserEnv.terminate()
 
 if __name__ == '__main__':

@@ -5,16 +5,15 @@ from Browser import AssertionOperator
 
 
 class Observer:
-    def __init__(self, browser, collectData, load, save):
+    def __init__(self, test_env, config, load, save):
         self.done = False
-        self.browser = browser
-        self.collectData = collectData
+        self.test_env = test_env
+        self.config = config
 
         self.load = load
         self.save = save
 
     def reset(self):
-        self.obsCount = 0
         self.done = False
 
     def __observeElements(self):
@@ -29,44 +28,21 @@ class Observer:
                 return {'tag': element.tagName, 'text': element.textContent, 'value': element.value, 'attributes': Array.prototype.map.call(element.attributes, (e) => ({ 'key': e.nodeName, 'value': e.nodeValue }) ) }
             } 
         }).filter(elements => { return elements !== null })"""
-        scannedElements = self.browser.evaluate_javascript('xpath=//html', ids)
+        scannedElements = self.test_env.evaluate_javascript('xpath=//html', ids)
         elements = self.load.elements
 
-        if self.collectData:
+        if self.config.data_collection.get('collect_data'):
             self.save.saveElements(scannedElements)
             self.save.saveActions(scannedElements)
         
         return np.array([1 if e in scannedElements else 0 for e in elements])
 
-
-    def __parse_keyword(self,target):
-        keyword, args = target['keyword'], target['args'].copy()
-        if "AssertionOperator" in args[1]:
-            args[1] = getattr(AssertionOperator, args[1].split('.')[1])
-        return keyword, args
-
-
     def __observeTargets(self):
-        reward_sum = [0] 
-        for target in self.load.targets:
-            try:
-                keyword, args = self.__parse_keyword(target)
-                getattr(self.browser, keyword)(*args, **{})
-                reward_sum.append(target.get('positive_reward'))
-                if not self.done:
-                    self.done = target.get('is_done')
-            except AssertionError:
-                reward_sum.append(target.get('negative_reward'))
-
-        reward_sum = sum(filter(None, reward_sum))
+        reward_sum, self.done = self.config.state_rewards()
         return reward_sum
 
-
-    def __checkReady(self):
-        time.sleep(0.05)
-
     def observe(self):
-        self.__checkReady()
+        self.config.env_ready()
         obs = self.__observeElements()
         reward = self.__observeTargets()
 

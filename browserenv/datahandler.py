@@ -3,11 +3,10 @@ import os
 
 
 class DataLoad:
-    def __init__(self, folder):
-        self.folder = folder
+    def __init__(self, config):
+        self.config = config
         self.elements = None
         self.actions = None
-        self.targets = None
         self.getFromFiles()
 
     def lenElements(self):
@@ -15,34 +14,31 @@ class DataLoad:
     
     def lenActions(self):
         return len(self.actions)
-
+    
     def getFromFiles(self):
-        with open(self.folder + 'config_elements.json', 'r') as f:
+        conf_path = self.config.env_parameters.get('config_path')
+        conf_elements = conf_path + self.config.env_parameters.get('elements_file')
+        conf_actions = conf_path + self.config.env_parameters.get('actions_file')
+
+        with open(conf_elements, 'r') as f:
             self.elements = json.load(f)
 
-        with open(self.folder + 'config_actions.json', 'r') as f:
+        with open(conf_actions, 'r') as f:
             self.actions = json.load(f)
-
-        with open(self.folder + 'config_targets.json', 'r') as f:
-            self.targets = json.load(f)
 
     def get_action(self, index):
         return self.actions[index]
 
 
 class DataSave:
-    def __init__(self, folder):
-        self.folder = folder
+    def __init__(self, config):
+        self.config = config
         self.elements = []
         self.actions = []
-        self.clickActions = ['A', 'BUTTON']
-        self.typeActions = ['INPUT']
-        self.ignoreElements = ['DIV']
-        self.typeWordList = ['testaaja', 'testi', 'salasana']
         self.createFolders()
 
-    def createFolders(self):
-        path = self.folder + 'temp/'
+    def createFolders(self):  
+        path = self.config.data_collection.get('temp_config_path')
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -51,12 +47,14 @@ class DataSave:
             return json.load(f)
 
     def saveElements(self, elements):
-        elementsFile = self.folder + 'temp/config_elements.json'
+        path = self.config.data_collection.get('temp_config_path')
+        elementsFile = path + self.config.data_collection.get('elements_file')
         if os.path.isfile(elementsFile):
             self.elements = self.__loadData(elementsFile)
 
         for e in elements:
-            if e not in self.elements and e['tag'] not in self.ignoreElements:
+            ignoreElements = self.config.data_collection.get('ignore_elements')
+            if e not in self.elements and e['tag'] not in ignoreElements:
                 self.elements.append(e)
 
         with open(elementsFile, 'w') as f:
@@ -82,25 +80,25 @@ class DataSave:
         return xpath
 
     def saveActions(self, elements):
-        actionsFile = self.folder + 'temp/config_actions.json'
+        path = self.config.data_collection.get('temp_config_path')
+        actionsFile = path + self.config.data_collection.get('actions_file')
         if os.path.isfile(actionsFile):
             self.actions = self.__loadData(actionsFile)
 
         for element in elements:
             # Check click actions
-            if element['tag'] in self.clickActions:
+            if element['tag'] in self.config.data_collection.get('click_actions'):
                 xpath = self.__xpathGeneration(element)
                 action = {"keyword": "click", "args": [xpath]}
                 self.__appendToActions(action)
             
             # Check type actions
             action = None
-            if element['tag'] in self.typeActions:
+            if element['tag'] in self.config.data_collection.get('type_actions'):
                 xpath = self.__xpathGeneration(element)
-                for word in self.typeWordList:
+                for word in self.config.data_collection.get('type_word_list'):
                     action = {"keyword": "type_text", "args": [xpath, word]}
                     self.__appendToActions(action)
-
 
         with open(actionsFile, 'w') as f:
             json.dump(self.actions, f)
