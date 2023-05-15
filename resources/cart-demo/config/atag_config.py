@@ -11,20 +11,20 @@ class Atag_config(object):
             'elements_file': 'config_elements.json',
             'actions_file': 'config_actions.json',
             'config_path': 'config/',
-            'results_location': 'results/model/',
+            'results_location': 'results/model2/',
             'passed_action_cost': -10.0,
             'failed_action_cost': -20.0,
         }
 
         self.data_collection = {
-            'collect_data': True,
+            'collect_data': False,
             'elements_file': 'config_elements.json',
             'actions_file': 'config_actions.json',
             'temp_config_path': 'config/temp/',
             'click_actions': ['A', 'BUTTON'],
             'ignore_elements': ['DIV'],
             'type_actions': ['INPUT'],
-            'type_word_list': ['testaaja', 'testi', 'salasana']
+            'type_word_list': []
         }
 
     def setup_env(self):
@@ -40,13 +40,13 @@ class Atag_config(object):
         page = 'http://localhost:3000/'
         self.test_env.set_browser_timeout("10 s")
         self.test_env.new_page(page)
-        self.test_env.set_browser_timeout("100 ms")
+        self.test_env.set_browser_timeout("700 ms")
 
     def teardown_test(self):
         self.test_env.close_page()
 
     def env_ready(self):
-        time.sleep(0.7)
+        time.sleep(0.02)
 
     def state_rewards(self):
         reward = 0.0

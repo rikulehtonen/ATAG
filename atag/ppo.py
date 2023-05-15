@@ -37,7 +37,7 @@ class PPO(object):
         self.action_probs = []
         self.rewards = []
 
-        #wandb.init(project="ATAG", entity="rikulehtonen")
+        wandb.init(project="ATAG", entity="rikulehtonen")
         self.start_time = time.time()
 
 
@@ -109,7 +109,7 @@ class PPO(object):
                     self.critic_optimizer.step()
             
             ep_reward = np.mean([np.sum(ep_rewards) for ep_rewards in batch_rewards])
-            #wandb.log({"ep_reward": ep_reward, "time_d": (time.time() - self.start_time), "is_done": (float(done))})
+            wandb.log({"ep_reward": ep_reward, "time_d": (time.time() - self.start_time), "is_done": (float(done))})
 
         return {'timesteps': 0, 'ep_reward': ep_reward}
 

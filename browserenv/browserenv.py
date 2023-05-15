@@ -34,7 +34,7 @@ class BrowserEnv:
         try:
             getattr(self.test_env, act)(*args, **kwargs)
             return self.config.env_parameters.get('passed_action_cost')
-        except:
+        except AssertionError:
             return self.config.env_parameters.get('failed_action_cost')
 
     def get_selected_action(self, act):
