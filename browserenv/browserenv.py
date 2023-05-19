@@ -1,9 +1,3 @@
-from Browser import Browser
-from Browser.utils.data_types import SupportedBrowsers
-import time
-import numpy as np
-from Browser import AssertionOperator
-import os
 from .observer import Observer
 from .datahandler import DataLoad, DataSave
 

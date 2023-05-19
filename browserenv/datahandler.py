@@ -1,5 +1,8 @@
 import json
 import os
+import numpy as np
+import base64
+import json
 
 
 class DataLoad:
@@ -102,3 +105,51 @@ class DataSave:
 
         with open(actionsFile, 'w') as f:
             json.dump(self.actions, f)
+
+
+class PathSave:
+    def __init__(self, config):
+        self.config = config
+        self.depth = 0
+        self.prevstate = None
+        self.path = []
+
+    def reset(self):
+        self.depth = 0
+        self.prevstate = None
+
+    def checkDepth(self):
+        if not (len(self.path) > self.depth):
+            self.path.append({})
+
+    def saveToFile(self):
+        with open('results/path.json', "w") as json_file:
+            json.dump(self.path, json_file)
+
+    def save(self, obs, done):
+        obs = np.packbits(obs)
+        state = bytearray(obs)
+        state = base64.b64encode(state).decode('utf-8')
+        if state == self.prevstate:
+            return False
+
+        self.checkDepth()
+        layer = self.path[self.depth]
+        connections = layer.get(self.prevstate)
+
+        if connections == None:
+            connections = {state: 1}
+        elif state in connections.keys():
+            connections[state] += 1
+        else:
+            connections.update({state: 1})
+
+        layer.update({self.prevstate: connections})
+        self.path[self.depth] = layer
+
+        if self.prevstate == None:
+            self.saveToFile()
+
+        self.prevstate = state
+        self.depth += 1
+        return True

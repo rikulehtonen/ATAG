@@ -1,4 +1,5 @@
 from .datahandler import DataLoad, DataSave
+from .datahandler import PathSave
 import time
 import numpy as np
 from Browser import AssertionOperator
@@ -12,9 +13,11 @@ class Observer:
 
         self.load = load
         self.save = save
+        self.pathsave = PathSave(config)
 
     def reset(self):
         self.done = False
+        self.pathsave.reset()
 
     def __observeElements(self):
         ids = """Array.prototype.map.call(document.getElementsByTagName('*'), (element) => 
@@ -45,5 +48,6 @@ class Observer:
         self.config.env_ready()
         obs = self.__observeElements()
         reward = self.__observeTargets()
+        self.pathsave.save(obs, self.done)
 
         return obs, reward, self.done
