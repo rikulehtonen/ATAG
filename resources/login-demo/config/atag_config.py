@@ -19,6 +19,8 @@ class Atag_config(object):
 
         self.data_collection = {
             'collect_data': False,
+            'collect_path': True,
+            'collect_path_file': 'results/path.json',
             'elements_file': 'config_elements.json',
             'actions_file': 'config_actions.json',
             'temp_config_path': 'config/temp/',

@@ -48,6 +48,7 @@ class Observer:
         self.config.env_ready()
         obs = self.__observeElements()
         reward = self.__observeTargets()
-        self.pathsave.save(obs, self.done)
+        if self.config.data_collection.get('collect_path'):
+            self.pathsave.save(obs, self.done)
 
         return obs, reward, self.done
