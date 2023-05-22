@@ -16,7 +16,9 @@ parameters = {
     'gamma': 0.99,
     'gae_lambda': 0.95,
     'clip': 0.2,
-    'save_frequency': 50
+    'save_frequency': 50,
+    'actor_file': 'actor.pt',
+    'critic_file': 'critic.pt'
 }
 
 def main():
