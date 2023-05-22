@@ -34,8 +34,9 @@ class BrowserEnv:
     def get_selected_action(self, act):
         return self.load.get_action(act.argmax())
 
-    def step(self, act):
+    def step(self, act, evaluation=False):
         selected_act = self.get_selected_action(act)
+        if evaluation: print(selected_act)
         act_reward = self.take_action(selected_act['keyword'], selected_act['args'], {})
         obs, obs_reward, done = self.observer.observe()
         reward = act_reward + obs_reward

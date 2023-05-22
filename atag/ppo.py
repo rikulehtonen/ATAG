@@ -55,7 +55,7 @@ class PPO(object):
             for total_iterations in range(self.params.episode_max_timesteps):
                 batch_obs.append(obs)
                 action, act_logprob = self.get_action(obs, evaluation)
-                obs, reward, done = self.env.step(action)
+                obs, reward, done = self.env.step(action, evaluation)
 
                 ep_rewards.append(reward)
                 batch_actions.append(action)
@@ -134,6 +134,9 @@ class PPO(object):
     def get_action(self, state, evaluation):
         mean = self.actor(state)
 
+        if evaluation:
+            return  mean.detach().numpy(), 1
+        
         dist = torch.distributions.Normal(mean, self.actor.log_std)
         action = dist.sample()
         log_prob = dist.log_prob(action).sum(axis=-1)
@@ -155,7 +158,11 @@ class PPO(object):
             torch.save(self.actor.state_dict(), f'{filepath}{total_iterations}_actor.pt')
             torch.save(self.critic.state_dict(), f'{filepath}{total_iterations}_critic.pt')
 
-    def load(self, filepath):
-        if filepath != None:
-            self.policy.load_state_dict(torch.load(filepath))
+    def load(self):
+        actor_file = self.params.actor_file
+        critic_file = self.params.critic_file
+        if actor_file != None:
+            self.actor.load_state_dict(torch.load(actor_file))
+        if critic_file != None:
+            self.critic.load_state_dict(torch.load(critic_file))
 

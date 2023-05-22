@@ -21,7 +21,7 @@ class Atag:
         self.params = Parameters(parameters)
         self.env = env
         self.agent = PPO(env, env.state_dim, env.action_dim, self.params)
-        #self.agent.load(model)
+        self.agent.load()
         createFolders(self.env.config.env_parameters.get('results_location'))
 
 
@@ -38,11 +38,10 @@ class Atag:
             print({"ep": ep, **train_info})
 
 
-    def test(self, trials, path):
-        for ep in range(trials):
+    def test(self):
+        for ep in range(self.params.max_timesteps):
             # collect data and update the policy
-            self.agent.load(path)
-            train_info = self.run_episode(evaluation=True)
+            train_info = self.agent.run_episode(evaluation=True)
 
             train_info.update({'episodes': ep})
-            print({"ep": ep, **train_info})    
+            print({"ep": ep, **train_info})
