@@ -1,4 +1,0 @@
-[
-    {"keyword": "get_element_states", "args": ["xpath=//div[@id='logininfo']", "AssertionOperator.contains", "visible"], "positive_reward": 40.0, "negative_reward": 0, "is_done": true},
-    {"keyword": "get_element_states", "args": ["xpath=//div[@id='loginFailed']", "AssertionOperator.contains", "visible"], "positive_reward": 20.0, "negative_reward": 0, "is_done": true}
-]
