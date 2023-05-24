@@ -21,10 +21,10 @@ pip install -r requirements.txt
 - atag folder: ML algorithm (PPO)
 - browserenv folder: Connection between the test library and the ML algorithm
 
-Set self.targets, self.elements and self.actions in browserenv __init__.py file. Run the training using:
+Run examples in the resources folder using:
 
 ```bash
-python run.py
+python train.py
 ```
 
 ## Contributing
