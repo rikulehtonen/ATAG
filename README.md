@@ -6,16 +6,20 @@ An experimental tool that combines reinforcement learning and test libraries to 
 
 ## Installation
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
+Installation instructions are not ready. The steps will be updated in near future.
 
+1. Install pytorch
+[https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)
+
+2. 
 ```bash
 pip install -r requirements.txt
 ```
 
 ## Usage
 
-- atag: ML algorithm
-- browserenv: connection between the Browser library and the ML algorithm
+- atag folder: ML algorithm (PPO)
+- browserenv folder: Connection between the test library and the ML algorithm
 
 Set self.targets, self.elements and self.actions in browserenv __init__.py file. Run the training using:
 
@@ -25,8 +29,8 @@ python run.py
 
 ## Contributing
 
-This is a private repository for a master thesis project. Pull requests are not possible for the time being. Suggestions are always welcome: riku.lehtonen@tietoevry.com
+This is a repository for a master thesis project. Pull requests are not possible for the time being.
 
 ## License
 
-[MIT](https://choosealicense.com/licenses/mit/)
+[Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/)
