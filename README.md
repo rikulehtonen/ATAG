@@ -1,6 +1,8 @@
 # ATAG
 
-An experimental tool that combines reinforcement learning and test libraries to build tests. The current version is only for demonstration purposes.
+Testing with machine learning. An experimental tool that combines reinforcement learning and test libraries to build test cases and exploratory testing. This is the master's thesis version of the test tool, and the final project will be moved to another repository when the thesis is ready.
+
+More info: [www.rikulehtonen.fi/projects/atag](https://www.rikulehtonen.fi/projects/atag)
 
 ![Demo](resources/material/atag_demo.gif)
 
@@ -11,7 +13,7 @@ Installation instructions are not ready. The steps will be updated in near futur
 1. Install pytorch
 [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)
 
-2. 
+2. Install requirements
 ```bash
 pip install -r requirements.txt
 ```
