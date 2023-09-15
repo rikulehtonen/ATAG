@@ -5,14 +5,14 @@ const HomePage = () => {
   return (
     <main className={styles.container}>
       <div className={styles.frontcat}>
-        <CategoryCard image="https://imgur.com/uKQqsuA.png" name="Xbox" />
-        <CategoryCard image="https://imgur.com/3Y1DLYC.png" name="PS5" />
-        <CategoryCard image="https://imgur.com/Dm212HS.png" name="Switch" />
-        <CategoryCard image="https://imgur.com/qb6IW1f.png" name="PC" />
-        <CategoryCard image="https://imgur.com/HsUfuRU.png" name="Accessories"/>
+        <CategoryCard image="/img/home.jpg" name="Home" />
+        <CategoryCard image="/img/security.jpg" name="Security" />
+        <CategoryCard image="/img/healtcare.jpg" name="Healthcare" />
+        <CategoryCard image="/img/entertainment.jpg" name="Entertainment" />
       </div>
     </main>
   );
 };
 
 export default HomePage;
+

@@ -11,7 +11,7 @@ const Navbar = () => {
 
   return (
     <nav className={styles.navbar}>
-      <h6 className={styles.logo}>GamesKart</h6>
+      <h6 className={styles.logo}>ROBO_STORE</h6>
       <ul className={styles.links}>
         <li className={styles.navlink}>
           <Link href="/">Home</Link>
