@@ -56,14 +56,14 @@ class PPO(object):
             ep_rewards = []
             ep_dones = []
 
-            obs, _, _ = self.env.reset()
+            obs = self.env.reset()
             done = False
 
             for total_iterations in range(self.params.episode_max_timesteps):
                 ep_obs.append(obs)
                 batch_obs.append(obs)
                 action, act_logprob = self.get_action(obs, evaluation)
-                obs, reward, done = self.env.step(action, evaluation)
+                obs, reward, done, _ = self.env.step(action, evaluation)
 
                 ep_next_obs.append(obs)
                 ep_actions.append(action)

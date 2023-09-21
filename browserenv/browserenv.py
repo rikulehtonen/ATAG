@@ -19,7 +19,7 @@ class BrowserEnv:
         self.config.teardown_test()
         self.config.setup_test()
         self.observer.reset()
-        return self.observer.observe()
+        return self.observer.observe()[0]
 
     def terminate(self):
         self.config.teardown_test()
@@ -41,4 +41,4 @@ class BrowserEnv:
         obs, obs_reward, done = self.observer.observe()
         reward = act_reward + obs_reward
 
-        return obs, reward, done
+        return obs, reward, done, {}

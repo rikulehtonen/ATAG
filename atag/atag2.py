@@ -32,7 +32,10 @@ class Atag2:
     def __init__(self, env, **parameters):
             
         parser = argparse.ArgumentParser()
-        parser.add_argument('--dataset', type=str, default='medium')  # medium, medium-replay, medium-expert, expert
+        #parser.add_argument('--online_training', type=bool, default=True)
+        #parser.add_argument('--pretrained_model', type=str, default='dt_experiment-browser-web-app-624135.pt')
+        parser.add_argument('--online_training', type=bool, default=False)
+        parser.add_argument('--pretrained_model', type=str, default=None)
         parser.add_argument('--mode', type=str, default='normal')  # normal for standard setting, delayed for sparse
         parser.add_argument('--K', type=int, default=20)
         parser.add_argument('--pct_traj', type=float, default=1.)
@@ -45,18 +48,16 @@ class Atag2:
         parser.add_argument('--dropout', type=float, default=0.1)
         parser.add_argument('--learning_rate', '-lr', type=float, default=1e-4)
         parser.add_argument('--weight_decay', '-wd', type=float, default=5e-4)
-        parser.add_argument('--warmup_steps', type=int, default=10000)
-        parser.add_argument('--num_eval_episodes', type=int, default=50)
+        parser.add_argument('--warmup_steps', type=int, default=1000)
+        parser.add_argument('--num_eval_episodes', type=int, default=15)
         parser.add_argument('--max_iters', type=int, default=5)
         parser.add_argument('--num_steps_per_iter', type=int, default=1000)
         parser.add_argument('--device', type=str, default='cuda')
-        parser.add_argument('--log_to_wandb', '-w', type=bool, default=False)
+        parser.add_argument('--log_to_wandb', '-w', type=bool, default=True)
         parser.add_argument('--save_model', default=False, action='store_true')
-        parser.add_argument('--pretrained_model', default=None, type=str)
         parser.add_argument('--stochastic', default=True, action='store_true')
         parser.add_argument('--use_entropy', default=False, action='store_true')
         parser.add_argument('--use_action_means', default=True, action='store_true')
-        parser.add_argument('--online_training', default=False, action='store_true')
         parser.add_argument('--online_buffer_size', default=1000, type=int) # keep top N trajectories for online training in replay buffer to start
         parser.add_argument('--eval_only', default=False, action='store_true')
         parser.add_argument('--remove_pos_embs', default=True, action='store_true')
@@ -89,7 +90,7 @@ class Atag2:
             os.makedirs(model_dir)
 
 
-        max_ep_len = 1000
+        max_ep_len = 5
         env_targets = [3600, 1800]  # evaluation conditioning targets
         scale = 1000.  # normalization for rewards/returns
 
