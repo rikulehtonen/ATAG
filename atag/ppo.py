@@ -5,7 +5,7 @@ from torch import nn
 from torch.distributions import Normal
 import numpy as np
 from .nn import NeuralNet
-#import wandb
+import wandb
 import time
 
 # Use CUDA for storing tensors / calculations if it's available
@@ -26,6 +26,7 @@ def discount_rewards(r, gamma):
 class PPO(object):
     def __init__(self, env, state_dim, action_dim, params):
         self.params = params
+        self.trainingData = params.get('trainingData')
 
         self.actor = NeuralNet(state_dim, action_dim)
         self.critic = NeuralNet(state_dim, 1)
@@ -37,7 +38,7 @@ class PPO(object):
         self.action_probs = []
         self.rewards = []
 
-        #wandb.init(project="ATAG", entity="rikulehtonen")
+        wandb.init(project="ATAG", entity="rikulehtonen")
         self.start_time = time.time()
 
 
@@ -48,20 +49,34 @@ class PPO(object):
         batch_rewards = []
 
         for batch_iterations in range(self.params.batch_timesteps):
+            
+            ep_obs = []
+            ep_next_obs = []
+            ep_actions = []
             ep_rewards = []
+            ep_dones = []
+
             obs, _, _ = self.env.reset()
             done = False
 
             for total_iterations in range(self.params.episode_max_timesteps):
+                ep_obs.append(obs)
                 batch_obs.append(obs)
                 action, act_logprob = self.get_action(obs, evaluation)
                 obs, reward, done = self.env.step(action, evaluation)
 
+                ep_next_obs.append(obs)
+                ep_actions.append(action)
                 ep_rewards.append(reward)
+                ep_dones.append(done)
+
                 batch_actions.append(action)
                 batch_log_probs.append(act_logprob)
 
                 if done: break
+
+            if self.trainingData:
+                self.trainingData.save(ep_obs,ep_next_obs,ep_actions,ep_rewards,ep_dones)
 
             batch_rewards.append(ep_rewards)
 
@@ -109,7 +124,7 @@ class PPO(object):
                     self.critic_optimizer.step()
             
             ep_reward = np.mean([np.sum(ep_rewards) for ep_rewards in batch_rewards])
-            #wandb.log({"ep_reward": ep_reward, "time_d": (time.time() - self.start_time), "is_done": (float(done))})
+            wandb.log({"ep_reward": ep_reward, "time_d": (time.time() - self.start_time), "is_done": (float(done))})
 
         return {'timesteps': 0, 'ep_reward': ep_reward}
 

@@ -154,3 +154,33 @@ class PathSave:
         self.prevstate = state
         self.depth += 1
         return True
+    
+
+class TrainingData:
+    def __init__(self, config):
+        self.config = config
+        self.dataitems = []
+
+    def save(self,ep_obs,ep_next_obs,ep_actions,ep_rewards,ep_dones):
+        # Create the directory if it doesn't exist
+        os.makedirs(self.config['training_data_path'], exist_ok=True)
+        
+        # Create a dictionary to store your training data
+        training_data = {
+            "observations": np.asarray(ep_obs).tolist(),
+            "next_observations": np.asarray(ep_next_obs).tolist(),
+            "actions": np.asarray(ep_actions).tolist(),
+            "rewards": np.asarray(ep_rewards).tolist(),
+            "terminals": np.asarray(ep_dones).tolist(),
+        }
+        
+        self.dataitems.append(training_data)
+
+        # Generate a unique filename for each training session based on timestamp
+        filename = os.path.join(self.config['training_data_path'], f"training_data.json")
+        
+        # Save the dictionary as a JSON file
+        with open(filename, 'w') as f:
+            json.dump(self.dataitems, f, indent=4)
+
+    
