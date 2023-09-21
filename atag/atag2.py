@@ -36,7 +36,7 @@ class Atag2:
         parser.add_argument('--mode', type=str, default='normal')  # normal for standard setting, delayed for sparse
         parser.add_argument('--K', type=int, default=20)
         parser.add_argument('--pct_traj', type=float, default=1.)
-        parser.add_argument('--batch_size', type=int, default=256)
+        parser.add_argument('--batch_size', type=int, default=64)
         parser.add_argument('--model_type', type=str, default='dt')  # dt for decision transformer, bc for behavior cloning
         parser.add_argument('--embed_dim', type=int, default=512)
         parser.add_argument('--n_layer', type=int, default=4)
@@ -64,7 +64,7 @@ class Atag2:
         parser.add_argument('--target_entropy', default=False, action='store_true')
         parser.add_argument('--stochastic_tanh', default=True, action='store_true')
         parser.add_argument('--approximate_entropy_samples',default=1000, type=int, help="if using stochastic network w/ tanh squashing, have to approximate entropy with k samples, as no anlytical solution")
-        parser.add_argument('--dataset_path', type=str, default='config/temp/training_data.json')
+        parser.add_argument('--dataset_path', type=str, default='training_data.json')
         args = parser.parse_args()
 
         self.params = Parameters(parameters)

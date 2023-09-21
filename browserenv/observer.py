@@ -51,4 +51,4 @@ class Observer:
         if self.config.data_collection.get('collect_path'):
             self.pathsave.save(obs, self.done)
 
-        return obs, reward, self.done
+        return np.array(obs), reward, self.done
