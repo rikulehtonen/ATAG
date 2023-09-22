@@ -32,14 +32,14 @@ class Atag2:
     def __init__(self, env, **parameters):
             
         parser = argparse.ArgumentParser()
-        #parser.add_argument('--online_training', type=bool, default=True)
-        #parser.add_argument('--pretrained_model', type=str, default='dt_experiment-browser-web-app-624135.pt')
-        parser.add_argument('--online_training', type=bool, default=False)
-        parser.add_argument('--pretrained_model', type=str, default=None)
+        parser.add_argument('--online_training', type=bool, default=True)
+        parser.add_argument('--pretrained_model', type=str, default='dt_experiment-browser-web-app-681095.pt')
+        #parser.add_argument('--online_training', type=bool, default=False)
+        #parser.add_argument('--pretrained_model', type=str, default=None)
         parser.add_argument('--mode', type=str, default='normal')  # normal for standard setting, delayed for sparse
         parser.add_argument('--K', type=int, default=20)
         parser.add_argument('--pct_traj', type=float, default=1.)
-        parser.add_argument('--batch_size', type=int, default=64)
+        parser.add_argument('--batch_size', type=int, default=32)
         parser.add_argument('--model_type', type=str, default='dt')  # dt for decision transformer, bc for behavior cloning
         parser.add_argument('--embed_dim', type=int, default=512)
         parser.add_argument('--n_layer', type=int, default=4)
@@ -50,7 +50,7 @@ class Atag2:
         parser.add_argument('--weight_decay', '-wd', type=float, default=5e-4)
         parser.add_argument('--warmup_steps', type=int, default=1000)
         parser.add_argument('--num_eval_episodes', type=int, default=15)
-        parser.add_argument('--max_iters', type=int, default=5)
+        parser.add_argument('--max_iters', type=int, default=200)
         parser.add_argument('--num_steps_per_iter', type=int, default=1000)
         parser.add_argument('--device', type=str, default='cuda')
         parser.add_argument('--log_to_wandb', '-w', type=bool, default=True)
@@ -85,20 +85,20 @@ class Atag2:
         group_name = f'{exp_prefix}-{env_name}-{dataset}'
         exp_prefix = f'{group_name}-{random.randint(int(1e5), int(1e6) - 1)}'
 
-        model_dir = os.path.join(pathlib.Path(__file__).parent.resolve(),f'./models/{env_name}/')
+        model_dir = './results/models/'
         if not os.path.exists(model_dir):
             os.makedirs(model_dir)
 
 
-        max_ep_len = 5
-        env_targets = [3600, 1800]  # evaluation conditioning targets
-        scale = 1000.  # normalization for rewards/returns
+        max_ep_len = 10
+        env_targets = [100, 200]  # evaluation conditioning targets
+        scale = 100.  # normalization for rewards/returns
 
         
         # Override env_targets / set different training target for online decision transformer, following paper
         if self.variant['online_training']:
-            env_targets = [3600]  # evaluation conditioning targets
-            target_online = 7200
+            env_targets = [200]  # evaluation conditioning targets
+            target_online = 200
 
         if model_type == 'bc':
             env_targets = env_targets[:1]  # since BC ignores target, no need for different evaluations
@@ -442,6 +442,8 @@ class Atag2:
                     
                     # Perform update, eval using deterministic policy 
                     outputs = trainer.train_iteration(num_steps=self.variant['num_steps_per_iter'], iter_num=iter+1, print_logs=True)
+                    torch.save(model,os.path.join(model_dir, model_type + '_' + exp_prefix + '.pt'))
+                    
                     if log_to_wandb:
                         wandb.log(outputs)
             else:
