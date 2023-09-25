@@ -30,47 +30,8 @@ class Parameters(dict):
 
 class Atag2:
     def __init__(self, env, **parameters):
-            
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--online_training', type=bool, default=True)
-        parser.add_argument('--pretrained_model', type=str, default='dt_experiment-browser-web-app-681095.pt')
-        #parser.add_argument('--online_training', type=bool, default=False)
-        #parser.add_argument('--pretrained_model', type=str, default=None)
-        parser.add_argument('--mode', type=str, default='normal')  # normal for standard setting, delayed for sparse
-        parser.add_argument('--K', type=int, default=20)
-        parser.add_argument('--pct_traj', type=float, default=1.)
-        parser.add_argument('--batch_size', type=int, default=32)
-        parser.add_argument('--model_type', type=str, default='dt')  # dt for decision transformer, bc for behavior cloning
-        parser.add_argument('--embed_dim', type=int, default=512)
-        parser.add_argument('--n_layer', type=int, default=4)
-        parser.add_argument('--n_head', type=int, default=4)
-        parser.add_argument('--activation_function', type=str, default='relu')
-        parser.add_argument('--dropout', type=float, default=0.1)
-        parser.add_argument('--learning_rate', '-lr', type=float, default=1e-4)
-        parser.add_argument('--weight_decay', '-wd', type=float, default=5e-4)
-        parser.add_argument('--warmup_steps', type=int, default=1000)
-        parser.add_argument('--num_eval_episodes', type=int, default=15)
-        parser.add_argument('--max_iters', type=int, default=200)
-        parser.add_argument('--num_steps_per_iter', type=int, default=1000)
-        parser.add_argument('--device', type=str, default='cuda')
-        parser.add_argument('--log_to_wandb', '-w', type=bool, default=True)
-        parser.add_argument('--save_model', default=False, action='store_true')
-        parser.add_argument('--stochastic', default=True, action='store_true')
-        parser.add_argument('--use_entropy', default=False, action='store_true')
-        parser.add_argument('--use_action_means', default=True, action='store_true')
-        parser.add_argument('--online_buffer_size', default=1000, type=int) # keep top N trajectories for online training in replay buffer to start
-        parser.add_argument('--eval_only', default=False, action='store_true')
-        parser.add_argument('--remove_pos_embs', default=True, action='store_true')
-        parser.add_argument('--eval_context', default=5, type=int)
-        parser.add_argument('--target_entropy', default=False, action='store_true')
-        parser.add_argument('--stochastic_tanh', default=True, action='store_true')
-        parser.add_argument('--approximate_entropy_samples',default=1000, type=int, help="if using stochastic network w/ tanh squashing, have to approximate entropy with k samples, as no anlytical solution")
-        parser.add_argument('--dataset_path', type=str, default='training_data.json')
-        args = parser.parse_args()
-
-        self.params = Parameters(parameters)
         self.env = env
-        self.variant = self.variant=vars(args)
+        self.variant = Parameters(parameters)
 
 
     def experiment(self, exp_prefix='experiment'):

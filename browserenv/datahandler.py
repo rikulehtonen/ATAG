@@ -181,6 +181,6 @@ class TrainingData:
         
         # Save the dictionary as a JSON file
         with open(filename, 'w') as f:
-            json.dump(self.dataitems, f, indent=4)
+            json.dump(self.dataitems, f)
 
     

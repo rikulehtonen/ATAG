@@ -1,5 +1,6 @@
 from .observer import Observer
 from .datahandler import DataLoad, DataSave
+import numpy as np
 
 class BrowserEnv:
     def __init__(self, config):
