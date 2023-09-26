@@ -51,15 +51,15 @@ class Atag2:
             os.makedirs(model_dir)
 
 
-        max_ep_len = 10
-        env_targets = [100, 200]  # evaluation conditioning targets
+        max_ep_len = 20
+        env_targets = [100, 700]  # evaluation conditioning targets
         scale = 100.  # normalization for rewards/returns
 
         
         # Override env_targets / set different training target for online decision transformer, following paper
         if self.variant['online_training']:
-            env_targets = [200]  # evaluation conditioning targets
-            target_online = 200
+            env_targets = [800]  # evaluation conditioning targets
+            target_online = 800
 
         if model_type == 'bc':
             env_targets = env_targets[:1]  # since BC ignores target, no need for different evaluations
