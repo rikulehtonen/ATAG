@@ -15,12 +15,14 @@ class BrowserEnv:
         self.test_env = self.config.setup_env()
         self.observer = Observer(self.test_env, self.config, self.load, self.save)
         self.config.setup_test()
+        self.prevObs = None
 
     def reset(self):
         self.config.teardown_test()
         self.config.setup_test()
         self.observer.reset()
-        return self.observer.observe()[0]
+        self.prevObs = self.observer.observe()[0]
+        return self.prevObs
 
     def terminate(self):
         self.config.teardown_test()
@@ -32,6 +34,11 @@ class BrowserEnv:
         except AssertionError:
             return self.config.env_parameters.get('failed_action_cost')
 
+    def stagnation_reward(self, obs):
+        if self.prevObs is not None and np.array_equal(self.prevObs, obs):
+            return self.config.env_parameters.get('stagnation_cost')
+        return 0
+
     def get_selected_action(self, act):
         return self.load.get_action(act.argmax())
 
@@ -40,6 +47,10 @@ class BrowserEnv:
         if evaluation: print(selected_act)
         act_reward = self.take_action(selected_act['keyword'], selected_act['args'], {})
         obs, obs_reward, done = self.observer.observe()
-        reward = act_reward + obs_reward
+
+        # Calculate reward and set previous observation
+        # Reward signal: cost of possible failure, reward from observation and cost from possible stagnation
+        reward = act_reward + obs_reward + self.stagnation_reward(obs)
+        self.prevObs = obs
 
         return obs, reward, done, {}
