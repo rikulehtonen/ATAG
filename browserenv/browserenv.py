@@ -13,7 +13,7 @@ class BrowserEnv:
         self.state_dim = self.load.lenElements()
 
         self.test_env = self.config.setup_env()
-        self.observer = Observer(self.test_env, self.config, self.load, self.save)
+        self.observer = Observer(self, self.config, self.load, self.save)
         self.config.setup_test()
         self.prevObs = None
 
