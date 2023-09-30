@@ -40,7 +40,7 @@ class BrowserEnv:
         return 0
 
     def get_selected_action(self, act):
-        return self.load.get_action(act.argmax())
+        return self.load.get_action(act)
 
     def step(self, act, evaluation=False):
         selected_act = self.get_selected_action(act)

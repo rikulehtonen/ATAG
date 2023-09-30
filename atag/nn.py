@@ -24,7 +24,8 @@ class NeuralNet(nn.Module):
             nn.ReLU(),
             nn.Linear(256, 128),
             nn.ReLU(),
-            nn.Linear(128, action_dim)
+            nn.Linear(128, action_dim),
+            nn.Softmax(dim=-1)
         )
 
         self.log_std = torch.as_tensor(np.ones(action_dim, dtype=float) * 1.0)

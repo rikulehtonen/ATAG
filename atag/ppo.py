@@ -148,23 +148,23 @@ class PPO(object):
         return torch.tensor(advantages, dtype=torch.float)
 
     def get_action(self, state, evaluation):
-        mean = self.actor(state)
+        action_probs = self.actor(state).detach().numpy()
 
         if evaluation:
-            return  mean.detach().numpy(), 1
+            action = np.argmax(action_probs)  # Choose the action with the highest probability
+            return action
         
-        dist = torch.distributions.Normal(mean, self.actor.log_std)
-        action = dist.sample()
-        log_prob = dist.log_prob(action).sum(axis=-1)
+        action = np.random.choice(len(action_probs), p=action_probs)
+        log_prob = np.log(action_probs[action])
 
-        return action.detach().numpy(), log_prob.detach()
+        return action, log_prob
 
     def get_value(self, batch_state, batch_actions):
         V = self.critic(batch_state).squeeze()
 
-        mean = self.actor(batch_state)
-        dist = torch.distributions.Normal(mean, self.actor.log_std)
-        log_probs = dist.log_prob(batch_actions).sum(axis=-1)
+        action_probs = self.actor(batch_state)
+        m = torch.distributions.Categorical(action_probs)
+        log_probs = m.log_prob(batch_actions)
 
         return V, log_probs
 
