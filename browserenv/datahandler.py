@@ -161,7 +161,7 @@ class TrainingData:
         self.config = config
         self.dataitems = []
 
-    def save(self,ep_obs,ep_next_obs,ep_actions,ep_rewards,ep_dones):
+    def save(self,ep_obs,ep_next_obs,ep_actions,ep_act_probs,ep_rewards,ep_dones):
         # Create the directory if it doesn't exist
         os.makedirs(self.config['training_data_path'], exist_ok=True)
         
@@ -170,6 +170,7 @@ class TrainingData:
             "observations": np.asarray(ep_obs).tolist(),
             "next_observations": np.asarray(ep_next_obs).tolist(),
             "actions": np.asarray(ep_actions).tolist(),
+            "act_probs": np.asarray(ep_act_probs).tolist(),
             "rewards": np.asarray(ep_rewards).tolist(),
             "terminals": np.asarray(ep_dones).tolist(),
         }

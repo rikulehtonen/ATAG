@@ -53,6 +53,7 @@ class PPO(object):
             ep_obs = []
             ep_next_obs = []
             ep_actions = []
+            ep_act_probs = []
             ep_rewards = []
             ep_dones = []
 
@@ -62,11 +63,12 @@ class PPO(object):
             for total_iterations in range(self.params.episode_max_timesteps):
                 ep_obs.append(obs)
                 batch_obs.append(obs)
-                action, act_logprob = self.get_action(obs, evaluation)
+                action, act_logprob, act_probs = self.get_action(obs, evaluation)
                 obs, reward, done, _ = self.env.step(action, evaluation)
 
                 ep_next_obs.append(obs)
                 ep_actions.append(action)
+                ep_act_probs.append(act_probs)
                 ep_rewards.append(reward)
                 ep_dones.append(done)
 
@@ -76,7 +78,7 @@ class PPO(object):
                 if done: break
 
             if self.trainingData:
-                self.trainingData.save(ep_obs,ep_next_obs,ep_actions,ep_rewards,ep_dones)
+                self.trainingData.save(ep_obs,ep_next_obs,ep_actions,ep_act_probs,ep_rewards,ep_dones)
 
             batch_rewards.append(ep_rewards)
 
@@ -127,7 +129,7 @@ class PPO(object):
             if self.params.get('log_to_wandb'):
                 wandb.log({"ep_reward": ep_reward, "time_d": (time.time() - self.start_time), "is_done": (float(done))})
 
-        return {'timesteps': 0, 'ep_reward': ep_reward}
+        return {'timesteps': self.params.batch_timesteps, 'ep_reward': ep_reward}
 
 
     def generalized_advantage_estimate(self, batch_rewards, V):
@@ -148,16 +150,17 @@ class PPO(object):
         return torch.tensor(advantages, dtype=torch.float)
 
     def get_action(self, state, evaluation):
-        action_probs = self.actor(state).detach().numpy()
+        probs = self.actor(state)  # Assuming actor returns a probability distribution
 
         if evaluation:
-            action = np.argmax(action_probs)  # Choose the action with the highest probability
-            return action
-        
-        action = np.random.choice(len(action_probs), p=action_probs)
-        log_prob = np.log(action_probs[action])
+            action = torch.argmax(probs).item()  # Changed this line
+            return action, 1  # Return scalar action and log prob of 1
+                
+        dist = torch.distributions.Categorical(probs)
+        action = dist.sample().item()  # Changed this line
+        log_prob = dist.log_prob(torch.tensor(action))  # Changed this line to convert action back to tensor for log_prob calculation
 
-        return action, log_prob
+        return action, log_prob.detach(), probs.detach()
 
     def get_value(self, batch_state, batch_actions):
         V = self.critic(batch_state).squeeze()
