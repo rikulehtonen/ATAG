@@ -116,7 +116,7 @@ def evaluate_episode_rtg(
             custom_max_length=eval_context
         )
         actions[-1] = action
-        action = action.detach().cpu().numpy()
+        #action = action.detach().cpu().numpy()
 
         state, reward, done, _ = env.step(action)
 
@@ -143,7 +143,7 @@ def evaluate_episode_rtg(
     if return_traj:
         traj = {
             'observations': states[:-1].cpu().detach().numpy(),
-            'actions': actions.cpu().detach().numpy(), 
+            'act_probs': actions.cpu().detach().numpy(), 
             'rewards': rewards.cpu().detach().numpy(),
             'terminals': np.zeros(episode_length, dtype=bool)
         }

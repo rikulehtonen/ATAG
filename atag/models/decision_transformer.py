@@ -47,7 +47,8 @@ class DecisionTransformer(TrajectoryModel):
         self.transformer = GPT2Model(config)
 
         # Settings from stochastic actions
-        self.stochastic = stochastic
+        #self.stochastic = stochastic NOTE: THIS IS COMMENTED FOR TESTING
+        self.stochastic = False 
         self.log_std_min=log_std_min
         self.log_std_max=log_std_max
         self.stochastic_tanh=stochastic_tanh
@@ -66,17 +67,20 @@ class DecisionTransformer(TrajectoryModel):
 
         self.predict_state = torch.nn.Linear(hidden_size, self.state_dim)
 
-        if stochastic:
-            self.predict_action_mean = nn.Sequential(
-                nn.Linear(hidden_size, self.act_dim),
-            )
-            self.predict_action_logstd = nn.Sequential(
-                nn.Linear(hidden_size, self.act_dim),
-            )
-        else:
-            self.predict_action = nn.Sequential(
-                *([nn.Linear(hidden_size, self.act_dim)] + ([nn.Tanh()] if action_tanh else []))
-            )
+        self.predict_action_logits = nn.Linear(hidden_size, self.state_dim)
+
+
+        self.predict_action_mean = nn.Sequential(
+            nn.Linear(hidden_size, self.act_dim),
+        )
+        self.predict_action_logstd = nn.Sequential(
+            nn.Linear(hidden_size, self.act_dim),
+        )
+        self.predict_action = nn.Sequential(
+            nn.Linear(hidden_size, self.act_dim),
+            nn.Softmax(dim=-1)  # Add softmax activation to get probabilities
+        )
+
         self.predict_return = torch.nn.Linear(hidden_size, 1)
 
     def forward(self, states, actions, rewards, returns_to_go, timesteps, attention_mask=None, target_actions=None, use_means=False):
@@ -143,39 +147,22 @@ class DecisionTransformer(TrajectoryModel):
         entropies = None
         if self.stochastic:
             
-            means = self.predict_action_mean(state_reps)
-            log_stds = self.predict_action_logstd(state_reps)
-
-            # Bound log of standard deviations
-            log_stds = torch.clamp(log_stds, self.log_std_min, self.log_std_max)
-            stds = torch.exp(log_stds)
-
-            #action_distributions = TransformedDistribution(Normal(means, stds), TanhTransform(cache_size=1))
-            #action_distributions = Normal(means, stds)
+            # Predict logits for each of the actions
+            action_logits = self.predict_action_logits(state_reps)
             
-            if self.stochastic_tanh:
-                action_distributions = Independent(TransformedDistribution(Normal(means, stds), TanhTransform(cache_size=1)),1)
-            else:
-                action_distributions = Independent(Normal(means, stds),1)
-            # Sample from distribution or predict mean
-            if use_means:
-                if self.stochastic_tanh:
-                    action_preds = torch.tanh(action_distributions.base_dist.base_dist.mean)
-                else:
-                    action_preds = action_distributions.mean
-            else:
-                action_preds = action_distributions.rsample()
-
-            if target_actions != None:
-                # Clamp target actions to prevent nans
-                eps = torch.finfo(target_actions.dtype).eps
-                target_actions = torch.clamp(target_actions, -1+eps, 1-eps)
-                action_log_probs = action_distributions.log_prob(target_actions)       
-                #entropies = action_distributions.base_dist.entropy()
-                if self.stochastic_tanh:
-                    entropies = -action_distributions.log_prob(action_distributions.rsample(sample_shape=torch.Size([self.approximate_entropy_samples]))).mean(dim=0)
-                else:
-                    entropies = action_distributions.entropy()
+            # Convert logits to probabilities using softmax
+            action_probs = nn.Softmax(dim=-1)(action_logits)
+            
+            # Create a categorical distribution
+            action_distribution = torch.distributions.Categorical(action_probs)
+            
+            # Sample an action from the distribution
+            action_preds = action_distribution.sample()
+            
+            # Optional: calculate log probabilities and entropy for the sampled actions
+            #if target_actions is not None:
+            #    action_log_probs = action_distribution.log_prob(target_actions)
+            #    entropies = action_distribution.entropy()
                 
 
         else:
@@ -220,7 +207,12 @@ class DecisionTransformer(TrajectoryModel):
         else:
             attention_mask = None
 
-        state_preds, action_preds, return_preds, _, _ = self.forward(
-            states, actions, rewards, returns_to_go, timesteps, attention_mask=attention_mask, use_means=use_means, **kwargs)
-        return action_preds[0,-1]
+        state_preds, action_probs, return_preds, _, _ = self.forward(
+        states, actions, rewards, returns_to_go, timesteps, attention_mask=attention_mask, use_means=use_means, **kwargs)
+
+        #return action_probs[0,-1]
+        # Sample an action from the probability distribution
+        action = torch.multinomial(action_probs[0, -1], 1).item()
+
+        return action
 

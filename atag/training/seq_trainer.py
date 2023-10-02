@@ -15,7 +15,7 @@ class SequenceTrainer(Trainer):
         state_preds, action_preds, return_preds, action_log_probs, entropies = self.model.forward(
             states, actions, rewards, rtg[:,:-1], timesteps, attention_mask=attention_mask,target_actions=action_target
         )
-
+        #print(action_preds)
         act_dim = action_preds.shape[2]
         state_dim = state_preds.shape[2]
         action_preds = action_preds.reshape(-1, act_dim)[attention_mask.reshape(-1) > 0]

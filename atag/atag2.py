@@ -158,7 +158,7 @@ class Atag2:
 
                 # get sequences from dataset
                 s.append(traj['observations'][si:si + max_len].reshape(1, -1, state_dim))
-                a.append(traj['actions'][si:si + max_len].reshape(1, -1, act_dim))
+                a.append(traj['act_probs'][si:si + max_len].reshape(1, -1, act_dim))
                 r.append(traj['rewards'][si:si + max_len].reshape(1, -1, 1))
                 if 'terminals' in traj:
                     d.append(traj['terminals'][si:si + max_len].reshape(1, -1))
@@ -188,7 +188,9 @@ class Atag2:
             rtg = torch.from_numpy(np.concatenate(rtg, axis=0)).to(dtype=torch.float32, device=device)
             timesteps = torch.from_numpy(np.concatenate(timesteps, axis=0)).to(dtype=torch.long, device=device)
             mask = torch.from_numpy(np.concatenate(mask, axis=0)).to(device=device)
-
+            #print('========')
+            #print(r)
+            #print(rtg)
             return s, a, r, d, rtg, timesteps, mask
 
         if self.variant['online_training']:
