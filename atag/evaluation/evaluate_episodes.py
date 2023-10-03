@@ -106,7 +106,7 @@ def evaluate_episode_rtg(
 
         actions = torch.cat([actions, torch.zeros((1, act_dim), device=device)], dim=0)
         rewards = torch.cat([rewards, torch.zeros(1, device=device)])
-        action = model.get_action(
+        action, act_probs = model.get_action(
             (states.to(dtype=torch.float32) - state_mean) / state_std,
             actions.to(dtype=torch.float32),
             rewards.to(dtype=torch.float32),
@@ -143,7 +143,7 @@ def evaluate_episode_rtg(
     if return_traj:
         traj = {
             'observations': states[:-1].cpu().detach().numpy(),
-            'act_probs': actions.cpu().detach().numpy(), 
+            'act_probs': act_probs.cpu().detach().numpy(), 
             'rewards': rewards.cpu().detach().numpy(),
             'terminals': np.zeros(episode_length, dtype=bool)
         }

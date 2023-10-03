@@ -214,5 +214,5 @@ class DecisionTransformer(TrajectoryModel):
         # Sample an action from the probability distribution
         action = torch.multinomial(action_probs[0, -1], 1).item()
 
-        return action
+        return action, action_probs[0]
 

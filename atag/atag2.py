@@ -51,7 +51,7 @@ class Atag2:
             os.makedirs(model_dir)
 
 
-        max_ep_len = 15
+        max_ep_len = 20
         env_targets = [-70, 1000]  # evaluation conditioning targets
         scale = 1000.  # normalization for rewards/returns
 
