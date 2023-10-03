@@ -148,22 +148,22 @@ class DecisionTransformer(TrajectoryModel):
         if self.stochastic:
             
             # Predict logits for each of the actions
-            action_logits = self.predict_action_logits(state_reps)
+            # action_logits = self.predict_action_logits(state_reps)
             
             # Convert logits to probabilities using softmax
-            action_probs = nn.Softmax(dim=-1)(action_logits)
+            # action_probs = nn.Softmax(dim=-1)(action_logits)
             
             # Create a categorical distribution
-            action_distribution = torch.distributions.Categorical(action_probs)
+            # action_distribution = torch.distributions.Categorical(action_probs)
             
             # Sample an action from the distribution
-            action_preds = action_distribution.sample()
+            # action_preds = action_distribution.sample()
             
             # Optional: calculate log probabilities and entropy for the sampled actions
             #if target_actions is not None:
             #    action_log_probs = action_distribution.log_prob(target_actions)
             #    entropies = action_distribution.entropy()
-                
+            action_preds = self.predict_action(x[:,1])
 
         else:
             action_preds = self.predict_action(x[:,1])  # predict next action given state
