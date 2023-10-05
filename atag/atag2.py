@@ -278,7 +278,7 @@ class Atag2:
             )
         else:
             raise NotImplementedError
-
+        
         model = model.to(device=device)
         warmup_steps = self.variant['warmup_steps']
         optimizer = torch.optim.AdamW(
@@ -319,7 +319,7 @@ class Atag2:
             multiplier_scheduler = None
 
         entropy_loss_fn = None
-        if self.variant['stochastic']:
+        """if self.variant['stochastic']:
             if self.variant['use_entropy']:
                 if self.variant['target_entropy']:
                     loss_fn = lambda s_hat, a_hat, rtg_hat,r_hat, s, a, rtg, r, a_log_prob, entropies: -torch.mean(a_log_prob) - torch.exp(log_entropy_multiplier.detach()) * torch.mean(entropies)
@@ -330,7 +330,9 @@ class Atag2:
             else:
                 loss_fn = lambda s_hat, a_hat, rtg_hat, r_hat, s, a, rtg,r, a_log_prob, entropies: -torch.mean(a_log_prob)
         else:
-            loss_fn = lambda s_hat, a_hat, rtg_hat, r_hat, s, a, rtg, r, a_log_prob, entropies: torch.mean((a_hat - a)**2)
+            loss_fn = lambda s_hat, a_hat, rtg_hat, r_hat, s, a, rtg, r, a_log_prob, entropies: torch.mean((a_hat - a)**2)"""
+
+        loss_fn = lambda s_hat, a_hat, rtg_hat, r_hat, s, a, rtg, r, a_log_prob, entropies: torch.mean((a_hat - a)**2)
 
         if model_type == 'dt':
             trainer = SequenceTrainer(

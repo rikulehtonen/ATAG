@@ -28,9 +28,6 @@ class NeuralNet(nn.Module):
             nn.Softmax(dim=-1)
         )
 
-        self.log_std = torch.as_tensor(np.ones(action_dim, dtype=float) * 1.0)
-        self.log_std = torch.nn.Parameter(torch.as_tensor(self.log_std))
-
     def forward(self, state):
         if not isinstance(state, torch.Tensor): state = torch.tensor(state, dtype=torch.float)
         return self.nn(state)

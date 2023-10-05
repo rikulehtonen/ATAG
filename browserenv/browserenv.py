@@ -40,11 +40,8 @@ class BrowserEnv:
         return 0
 
     def get_selected_action(self, act):
-        print("-------")
         if not isinstance(act, int):
-            print(act)
             act = act.argmax()
-        print(act)
         return self.load.get_action(act)
 
     def step(self, act, evaluation=False):

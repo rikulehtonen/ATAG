@@ -25,7 +25,7 @@ class DecisionTransformer(TrajectoryModel):
             max_length=None,
             max_ep_len=4096,
             action_tanh=True,
-            stochastic=False,
+            stochastic=True,
             log_std_min=-20,
             log_std_max=2,
             remove_pos_embs=False,
@@ -47,8 +47,7 @@ class DecisionTransformer(TrajectoryModel):
         self.transformer = GPT2Model(config)
 
         # Settings from stochastic actions
-        #self.stochastic = stochastic NOTE: THIS IS COMMENTED FOR TESTING
-        self.stochastic = False 
+        self.stochastic=stochastic
         self.log_std_min=log_std_min
         self.log_std_max=log_std_max
         self.stochastic_tanh=stochastic_tanh
@@ -67,15 +66,14 @@ class DecisionTransformer(TrajectoryModel):
 
         self.predict_state = torch.nn.Linear(hidden_size, self.state_dim)
 
-        self.predict_action_logits = nn.Linear(hidden_size, self.state_dim)
 
 
-        self.predict_action_mean = nn.Sequential(
-            nn.Linear(hidden_size, self.act_dim),
-        )
-        self.predict_action_logstd = nn.Sequential(
-            nn.Linear(hidden_size, self.act_dim),
-        )
+        # self.predict_action_mean = nn.Sequential(
+        #     nn.Linear(hidden_size, self.act_dim),
+        # )
+        # self.predict_action_logstd = nn.Sequential(
+        #     nn.Linear(hidden_size, self.act_dim),
+        # )
         self.predict_action = nn.Sequential(
             nn.Linear(hidden_size, self.act_dim),
             nn.Softmax(dim=-1)  # Add softmax activation to get probabilities
@@ -141,32 +139,15 @@ class DecisionTransformer(TrajectoryModel):
         # get predictions
         return_preds = self.predict_return(action_reps)  # predict next return given state and action
         state_preds = self.predict_state(action_reps)    # predict next state given state and action
-        
+        action_preds = self.predict_action(state_reps)
 
         action_log_probs = None
         entropies = None
-        if self.stochastic:
-            
-            # Predict logits for each of the actions
-            # action_logits = self.predict_action_logits(state_reps)
-            
-            # Convert logits to probabilities using softmax
-            # action_probs = nn.Softmax(dim=-1)(action_logits)
-            
-            # Create a categorical distribution
-            # action_distribution = torch.distributions.Categorical(action_probs)
-            
-            # Sample an action from the distribution
-            # action_preds = action_distribution.sample()
-            
-            # Optional: calculate log probabilities and entropy for the sampled actions
-            #if target_actions is not None:
-            #    action_log_probs = action_distribution.log_prob(target_actions)
-            #    entropies = action_distribution.entropy()
-            action_preds = self.predict_action(x[:,1])
-
-        else:
-            action_preds = self.predict_action(x[:,1])  # predict next action given state
+        # if self.stochastic:
+        #     dist = torch.distributions.Categorical(probs=action_preds)
+        #     action = dist.sample((self.act_dim))  # Changed this line
+        #     action_preds = dist.log_prob(torch.tensor(action))
+        #     entropies = dist.entropy()
 
         return state_preds, action_preds, return_preds, action_log_probs, entropies
 
@@ -212,7 +193,14 @@ class DecisionTransformer(TrajectoryModel):
 
         #return action_probs[0,-1]
         # Sample an action from the probability distribution
-        action = torch.multinomial(action_probs[0, -1], 1).item()
+        if self.stochastic:
+            action = torch.multinomial(action_probs[0, -1], 1).item()
+        else:
+            action = action_probs[0, -1].argmax()
+            
+        if np.random.rand() < 0.2:
+            # Randomly select an action with probability epsilon
+            action = np.random.choice(self.act_dim)
 
         return action, action_probs[0]
 
