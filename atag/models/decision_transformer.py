@@ -198,9 +198,9 @@ class DecisionTransformer(TrajectoryModel):
         else:
             action = action_probs[0, -1].argmax()
             
-        if np.random.rand() < 0.2:
+        #if np.random.rand() < 0.2:
             # Randomly select an action with probability epsilon
-            action = np.random.choice(self.act_dim)
+        #    action = np.random.choice(self.act_dim)
 
         return action, action_probs[0]
 

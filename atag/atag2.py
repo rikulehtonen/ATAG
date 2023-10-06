@@ -361,9 +361,10 @@ class Atag2:
 
         if log_to_wandb:
             wandb.init(
+                entity='rikulehtonen',
                 name=exp_prefix,
                 group=group_name,
-                project='decision-transformer',
+                project='ATAG2-testruns',
                 config=self.variant
             )
             # wandb.watch(model)  # wandb has some bug
