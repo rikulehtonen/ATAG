@@ -107,12 +107,18 @@ class PPO(object):
 
             for _ in range(self.params.iteration_epochs):
                 for mini_batch in inds:
-                    
+
+                    # Add entropy bonus to actor loss
+                    _, _, act_probs = self.get_action(batch_obs_s[mini_batch], evaluation=True)
+                    entropy_bonus = -(act_probs * torch.log(act_probs + 1e-10)).sum().mean()
+                    actor_loss = self.params.entropy_coeff * entropy_bonus
+
+
                     AM = (A[mini_batch] - A[mini_batch].mean()) / (A[mini_batch].std() + 1e-10)
                     V, curr_log_probs = self.get_value(batch_obs_s[mini_batch], batch_actions_s[mini_batch])
 
                     ratio = torch.exp(curr_log_probs - batch_log_probs_s[mini_batch])
-                    actor_loss = (-torch.min(ratio * AM, torch.clamp(ratio, 1 - self.params.clip, 1 + self.params.clip) * AM)).mean()
+                    actor_loss += (-torch.min(ratio * AM, torch.clamp(ratio, 1 - self.params.clip, 1 + self.params.clip) * AM)).mean()
                     critic_loss = nn.MSELoss()(V, R[mini_batch])
 
                     self.actor_optimizer.zero_grad()
@@ -151,16 +157,15 @@ class PPO(object):
 
     def get_action(self, state, evaluation):
         probs = self.actor(state)  # Assuming actor returns a probability distribution
+        dist = torch.distributions.Categorical(probs)
 
         if evaluation:
-            action = torch.argmax(probs).item()  # Changed this line
-            return action, 1  # Return scalar action and log prob of 1
-                
-        dist = torch.distributions.Categorical(probs)
-        action = dist.sample().item()  # Changed this line
-        log_prob = dist.log_prob(torch.tensor(action))  # Changed this line to convert action back to tensor for log_prob calculation
+            action = torch.argmax(probs).item()
+            return action, 1, dist.entropy().detach()
 
-        return action, log_prob.detach(), probs.detach()
+        action = dist.sample().item()
+        log_prob = dist.log_prob(torch.tensor(action))
+        return action, log_prob.detach(), dist.entropy().detach()
 
     def get_value(self, batch_state, batch_actions):
         V = self.critic(batch_state).squeeze()
