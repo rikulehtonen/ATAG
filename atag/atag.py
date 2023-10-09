@@ -28,7 +28,11 @@ class Atag:
     def train(self):
         for ep in range(self.params.max_timesteps):
             # collect data and update the policy
-            train_info = self.agent.run_episode()
+            try:
+                train_info = self.agent.run_episode()
+            except:
+                print("============")
+                print("ERROR")
             
             # Update results
             if (ep+1) % 1 == 0:

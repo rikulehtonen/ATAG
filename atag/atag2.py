@@ -155,7 +155,8 @@ class Atag2:
                 else:
                     traj = trajectories[int(sorted_inds[batch_inds[i]])]
                 si = random.randint(0, traj['rewards'].shape[0] - 1)
-
+                print(traj['act_probs'][si:si + max_len].shape)
+                print(traj['act_probs'][si:si + max_len])
                 # get sequences from dataset
                 s.append(traj['observations'][si:si + max_len].reshape(1, -1, state_dim))
                 a.append(traj['act_probs'][si:si + max_len].reshape(1, -1, act_dim))

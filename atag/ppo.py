@@ -47,6 +47,7 @@ class PPO(object):
         batch_actions = []
         batch_log_probs = []
         batch_rewards = []
+        batch_entropies = []
 
         for batch_iterations in range(self.params.batch_timesteps):
             
@@ -63,7 +64,7 @@ class PPO(object):
             for total_iterations in range(self.params.episode_max_timesteps):
                 ep_obs.append(obs)
                 batch_obs.append(obs)
-                action, act_logprob, act_probs = self.get_action(obs, evaluation)
+                action, act_logprob, act_probs, entropy = self.get_action(obs, evaluation)
                 obs, reward, done, _ = self.env.step(action, evaluation)
 
                 ep_next_obs.append(obs)
@@ -74,6 +75,7 @@ class PPO(object):
 
                 batch_actions.append(action)
                 batch_log_probs.append(act_logprob)
+                batch_entropies.append(entropy)
 
                 if done: break
 
@@ -85,6 +87,7 @@ class PPO(object):
             batch_obs_s = torch.tensor(batch_obs, dtype=torch.float)
             batch_actions_s = torch.tensor(batch_actions, dtype=torch.float)
             batch_log_probs_s = torch.tensor(batch_log_probs, dtype=torch.float)
+            batch_entropies_s = torch.tensor(batch_entropies, dtype=torch.float)
 
             V, _ = self.get_value(batch_obs_s, batch_actions_s)
 
@@ -97,6 +100,7 @@ class PPO(object):
             batch_obs_s = torch.split(batch_obs_s, division)
             batch_actions_s = torch.split(batch_actions_s, division)
             batch_log_probs_s = torch.split(batch_log_probs_s, division)
+            batch_entropies_s = torch.split(batch_entropies_s, division)
             
             V = torch.split(V, division)
             A = torch.split(A, division)
@@ -109,20 +113,25 @@ class PPO(object):
                 for mini_batch in inds:
 
                     # Add entropy bonus to actor loss
-                    _, _, act_probs = self.get_action(batch_obs_s[mini_batch], evaluation=True)
-                    entropy_bonus = -(act_probs * torch.log(act_probs + 1e-10)).sum().mean()
-                    actor_loss = self.params.entropy_coeff * entropy_bonus
-
 
                     AM = (A[mini_batch] - A[mini_batch].mean()) / (A[mini_batch].std() + 1e-10)
                     V, curr_log_probs = self.get_value(batch_obs_s[mini_batch], batch_actions_s[mini_batch])
 
                     ratio = torch.exp(curr_log_probs - batch_log_probs_s[mini_batch])
-                    actor_loss += (-torch.min(ratio * AM, torch.clamp(ratio, 1 - self.params.clip, 1 + self.params.clip) * AM)).mean()
+                    
+                    # Original actor loss
+                    actor_loss = (-torch.min(ratio * AM, torch.clamp(ratio, 1 - self.params.clip, 1 + self.params.clip) * AM)).mean()
+
+                    # Add the entropy bonus, scaled by the coefficient
+                    entropy_bonus = (self.params.entropy_coeff * batch_entropies_s[mini_batch]).mean()
+
+                    # Total actor loss including the entropy bonus
+                    total_actor_loss = actor_loss - entropy_bonus  # Subtracting because we’re minimizing the loss
+
                     critic_loss = nn.MSELoss()(V, R[mini_batch])
 
                     self.actor_optimizer.zero_grad()
-                    actor_loss.backward(retain_graph=True)
+                    total_actor_loss.backward(retain_graph=True)  # Updated to total_actor_loss
                     torch.nn.utils.clip_grad_norm_(self.actor.parameters(), 0.5)
                     self.actor_optimizer.step()
 
@@ -161,11 +170,12 @@ class PPO(object):
 
         if evaluation:
             action = torch.argmax(probs).item()
-            return action, 1, dist.entropy().detach()
-
+            return action
+                
         action = dist.sample().item()
         log_prob = dist.log_prob(torch.tensor(action))
-        return action, log_prob.detach(), dist.entropy().detach()
+
+        return action, log_prob.detach(), probs.detach(), dist.entropy().detach()
 
     def get_value(self, batch_state, batch_actions):
         V = self.critic(batch_state).squeeze()
@@ -189,4 +199,3 @@ class PPO(object):
             self.actor.load_state_dict(torch.load(actor_file))
         if critic_file != None:
             self.critic.load_state_dict(torch.load(critic_file))
-
