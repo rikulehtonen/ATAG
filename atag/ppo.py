@@ -7,6 +7,7 @@ import numpy as np
 from .nn import NeuralNet
 import wandb
 import time
+import random
 
 # Use CUDA for storing tensors / calculations if it's available
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -165,6 +166,13 @@ class PPO(object):
         return torch.tensor(advantages, dtype=torch.float)
 
     def get_action(self, state, evaluation):
+
+        #if True:
+        #    action = random.randint(0,self.env.action_dim-1)
+        #    probs = torch.zeros(self.env.action_dim)
+        #    probs[action] = 1.0
+        #    return action, 1, probs, 1
+
         probs = self.actor(state)  # Assuming actor returns a probability distribution
         dist = torch.distributions.Categorical(probs)
 
