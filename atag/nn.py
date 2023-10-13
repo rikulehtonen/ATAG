@@ -20,11 +20,13 @@ class NeuralNet(nn.Module):
         super(NeuralNet, self).__init__()
 
         self.nn = nn.Sequential(
-            nn.Linear(state_dim, 256),
+            nn.Linear(state_dim, 64),
             nn.ReLU(),
-            nn.Linear(256, 128),
+            nn.Dropout(0.1),
+            nn.Linear(64, 32),
             nn.ReLU(),
-            nn.Linear(128, action_dim),
+            nn.Dropout(0.1),
+            nn.Linear(32, action_dim),
             nn.Softmax(dim=-1)
         )
 
