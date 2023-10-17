@@ -163,15 +163,11 @@ class PPO(object):
                 advantages.insert(0, advantage)
                 i -= 1
 
-        return torch.tensor(advantages, dtype=torch.float)
+        advantages = torch.tensor(advantages, dtype=torch.float)
+        # advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+        return advantages
 
     def get_action(self, state, evaluation):
-
-        #if True:
-        #    action = random.randint(0,self.env.action_dim-1)
-        #    probs = torch.zeros(self.env.action_dim)
-        #    probs[action] = 1.0
-        #    return action, 1, probs, 1
 
         probs = self.actor(state)  # Assuming actor returns a probability distribution
         dist = torch.distributions.Categorical(probs)
@@ -181,7 +177,7 @@ class PPO(object):
             return action
                 
         action = dist.sample().item()
-        log_prob = dist.log_prob(torch.tensor(action))
+        log_prob = dist.log_prob(torch.tensor(action)) + 1e-8
 
         return action, log_prob.detach(), probs.detach(), dist.entropy().detach()
 
