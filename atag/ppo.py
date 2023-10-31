@@ -169,7 +169,7 @@ class PPO(object):
 
     def get_action(self, state, evaluation):
 
-        probs = self.actor(state)  # Assuming actor returns a probability distribution
+        probs = self.actor(state, 1.2)  # Assuming actor returns a probability distribution
         dist = torch.distributions.Categorical(probs)
 
         if evaluation:

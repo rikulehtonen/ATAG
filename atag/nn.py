@@ -24,9 +24,11 @@ class NeuralNet(nn.Module):
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(128, action_dim),
-            nn.Softmax(dim=-1)
         )
 
-    def forward(self, state):
+    def forward(self, state, temperature=1.0):
         if not isinstance(state, torch.Tensor): state = torch.tensor(state, dtype=torch.float)
-        return self.nn(state)
+        logits = self.nn(state)
+        # Apply temperature scaling to the logits before softmax
+        scaled_logits = logits / temperature
+        return F.softmax(scaled_logits, dim=-1)
