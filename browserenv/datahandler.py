@@ -178,7 +178,7 @@ class TrainingData:
         self.dataitems.append(training_data)
 
         # Generate a unique filename for each training session based on timestamp
-        filename = os.path.join(self.config['training_data_path'], f"training_data.json")
+        filename = os.path.join(self.config['training_data_path'], self.config['filename'])
         
         # Save the dictionary as a JSON file
         with open(filename, 'w') as f:

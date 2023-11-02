@@ -39,7 +39,7 @@ class PPO(object):
         self.action_probs = []
         self.rewards = []
         if params.get('log_to_wandb'):
-            wandb.init(project="ATAG2-testruns", entity="rikulehtonen", group="PPO-cart")
+            wandb.init(project="Thesis-results", entity="rikulehtonen", group=params.get('name'))
         self.start_time = time.time()
 
 
