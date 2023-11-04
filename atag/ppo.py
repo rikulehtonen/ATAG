@@ -203,3 +203,16 @@ class PPO(object):
             self.actor.load_state_dict(torch.load(actor_file))
         if critic_file != None:
             self.critic.load_state_dict(torch.load(critic_file))
+
+    def evaluate(self):
+        rewards = []
+        for batch_iterations in range(self.params.batch_timesteps):
+            obs = self.env.reset()
+            rewardSum = 0
+            for total_iterations in range(self.params.episode_max_timesteps):
+                action, act_logprob, act_probs, entropy = self.get_action(obs, False)
+                obs, reward, done, _ = self.env.step(action)
+                rewardSum += reward
+            rewards.append(rewardSum)
+
+        return rewards

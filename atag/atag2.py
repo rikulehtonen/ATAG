@@ -52,14 +52,14 @@ class Atag2:
 
 
         max_ep_len = 20
-        env_targets = [-70, 1000]  # evaluation conditioning targets
+        env_targets = [600]  # evaluation conditioning targets
         scale = 1000.  # normalization for rewards/returns
 
         
         # Override env_targets / set different training target for online decision transformer, following paper
         if self.variant['online_training']:
-            env_targets = [1000]  # evaluation conditioning targets
-            target_online = 1000
+            env_targets = [600]  # evaluation conditioning targets
+            target_online = 600
 
         if model_type == 'bc':
             env_targets = env_targets[:1]  # since BC ignores target, no need for different evaluations
@@ -362,8 +362,8 @@ class Atag2:
             wandb.init(
                 entity='rikulehtonen',
                 name=exp_prefix,
-                group=group_name,
-                project='ATAG2-testruns',
+                group='ODT_TC2',
+                project='Thesis-results',
                 config=self.variant
             )
             # wandb.watch(model)  # wandb has some bug

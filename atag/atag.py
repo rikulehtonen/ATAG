@@ -41,10 +41,6 @@ class Atag:
         return train_info.get('ep_reward')
 
 
-    def test(self):
-        for ep in range(self.params.max_timesteps):
-            # collect data and update the policy
-            train_info = self.agent.run_episode(evaluation=True)
-
-            train_info.update({'episodes': ep})
-            print({"ep": ep, **train_info})
+    def evaluate(self):
+        # collect data and update the policy
+        return self.agent.evaluate()
