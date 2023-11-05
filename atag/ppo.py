@@ -213,6 +213,7 @@ class PPO(object):
                 action, act_logprob, act_probs, entropy = self.get_action(obs, False)
                 obs, reward, done, _ = self.env.step(action)
                 rewardSum += reward
+                if done: break
             rewards.append(rewardSum)
 
         return rewards
