@@ -52,14 +52,14 @@ class Atag2:
 
 
         max_ep_len = 20
-        env_targets = [600]  # evaluation conditioning targets
+        env_targets = [1600]  # evaluation conditioning targets
         scale = 1000.  # normalization for rewards/returns
 
         
         # Override env_targets / set different training target for online decision transformer, following paper
         if self.variant['online_training']:
-            env_targets = [600]  # evaluation conditioning targets
-            target_online = 600
+            env_targets = [1600]  # evaluation conditioning targets
+            target_online = 1600
 
         if model_type == 'bc':
             env_targets = env_targets[:1]  # since BC ignores target, no need for different evaluations
@@ -362,7 +362,7 @@ class Atag2:
             wandb.init(
                 entity='rikulehtonen',
                 name=exp_prefix,
-                group='ODT_TC2',
+                group=self.variant['group_name'],
                 project='Thesis-results',
                 config=self.variant
             )
@@ -386,25 +386,27 @@ class Atag2:
             if self.variant['online_training']:
                 for iter in range(self.variant['max_iters']):
                     # Collect new rollout, using stochastic policy
-                    ret, length, traj = evaluate_episode_rtg(
-                                self.env,
-                                state_dim,
-                                act_dim,
-                                model,
-                                max_ep_len=max_ep_len,
-                                scale=scale,
-                                target_return=target_online/scale,
-                                mode=mode,
-                                state_mean=state_mean,
-                                state_std=state_std,
-                                device=device,
-                                use_means=False,
-                                return_traj=True
-                    )
-                    # Remove oldest trajectory, add new trajectory
-                    trajectories = trajectories[1:]
-                    trajectories.append(traj)
-                    
+                    for path_iteration in range(5):
+                        ret, length, traj = evaluate_episode_rtg(
+                                    self.env,
+                                    state_dim,
+                                    act_dim,
+                                    model,
+                                    max_ep_len=max_ep_len,
+                                    scale=scale,
+                                    target_return=target_online/scale,
+                                    mode=mode,
+                                    state_mean=state_mean,
+                                    state_std=state_std,
+                                    device=device,
+                                    use_means=False,
+                                    return_traj=True
+                        )
+                        # Remove oldest trajectory, add new trajectory
+
+                        trajectories = trajectories[1:]
+                        trajectories.append(traj)
+
                     # Perform update, eval using deterministic policy 
                     outputs = trainer.train_iteration(num_steps=self.variant['num_steps_per_iter'], iter_num=iter+1, print_logs=True)
                     torch.save(model,os.path.join(model_dir, model_type + '_' + exp_prefix + '.pt'))

@@ -143,7 +143,7 @@ def evaluate_episode_rtg(
     if return_traj:
         traj = {
             'observations': states[:-1].cpu().detach().numpy(),
-            'act_probs': act_probs.cpu().detach().numpy(), 
+            'act_probs': act_probs[:episode_length].cpu().detach().numpy(), 
             'rewards': rewards.cpu().detach().numpy(),
             'terminals': np.zeros(episode_length, dtype=bool)
         }
