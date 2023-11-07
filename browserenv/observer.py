@@ -6,9 +6,10 @@ from Browser import AssertionOperator
 
 
 class Observer:
-    def __init__(self, test_env, config, load, save):
+    def __init__(self, browser_env, config, load, save):
         self.done = False
-        self.test_env = test_env
+        self.browser_env = browser_env
+        self.test_env = browser_env.test_env
         self.config = config
 
         self.load = load
@@ -45,10 +46,15 @@ class Observer:
         return reward_sum
 
     def observe(self):
-        self.config.env_ready()
-        obs = self.__observeElements()
-        reward = self.__observeTargets()
-        if self.config.data_collection.get('collect_path'):
-            self.pathsave.save(obs, self.done)
+        try:
+            self.config.env_ready()
+            obs = self.__observeElements()
+            reward = self.__observeTargets()
+            if self.config.data_collection.get('collect_path'):
+                self.pathsave.save(obs, self.done)
 
-        return obs, reward, self.done
+            return np.array(obs), reward, self.done
+        except AssertionError:
+            print("error")
+            time.sleep(4)
+            return np.zeros(self.browser_env.state_dim), 0, True

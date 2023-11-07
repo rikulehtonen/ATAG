@@ -5,8 +5,9 @@ from torch import nn
 from torch.distributions import Normal
 import numpy as np
 from .nn import NeuralNet
-#import wandb
+import wandb
 import time
+import random
 
 # Use CUDA for storing tensors / calculations if it's available
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -26,6 +27,7 @@ def discount_rewards(r, gamma):
 class PPO(object):
     def __init__(self, env, state_dim, action_dim, params):
         self.params = params
+        self.trainingData = params.get('trainingData')
 
         self.actor = NeuralNet(state_dim, action_dim)
         self.critic = NeuralNet(state_dim, 1)
@@ -36,8 +38,8 @@ class PPO(object):
         self.env = env
         self.action_probs = []
         self.rewards = []
-
-        #wandb.init(project="ATAG", entity="rikulehtonen")
+        if params.get('log_to_wandb'):
+            wandb.init(project="Thesis-results", entity="rikulehtonen", group=params.get('name'))
         self.start_time = time.time()
 
 
@@ -46,28 +48,47 @@ class PPO(object):
         batch_actions = []
         batch_log_probs = []
         batch_rewards = []
+        batch_entropies = []
 
         for batch_iterations in range(self.params.batch_timesteps):
+            
+            ep_obs = []
+            ep_next_obs = []
+            ep_actions = []
+            ep_act_probs = []
             ep_rewards = []
-            obs, _, _ = self.env.reset()
+            ep_dones = []
+
+            obs = self.env.reset()
             done = False
 
             for total_iterations in range(self.params.episode_max_timesteps):
+                ep_obs.append(obs)
                 batch_obs.append(obs)
-                action, act_logprob = self.get_action(obs, evaluation)
-                obs, reward, done = self.env.step(action, evaluation)
+                action, act_logprob, act_probs, entropy = self.get_action(obs, evaluation)
+                obs, reward, done, _ = self.env.step(action, evaluation)
 
+                ep_next_obs.append(obs)
+                ep_actions.append(action)
+                ep_act_probs.append(act_probs)
                 ep_rewards.append(reward)
+                ep_dones.append(done)
+
                 batch_actions.append(action)
                 batch_log_probs.append(act_logprob)
+                batch_entropies.append(entropy)
 
                 if done: break
+
+            if self.trainingData:
+                self.trainingData.save(ep_obs,ep_next_obs,ep_actions,ep_act_probs,ep_rewards,ep_dones)
 
             batch_rewards.append(ep_rewards)
 
             batch_obs_s = torch.tensor(batch_obs, dtype=torch.float)
             batch_actions_s = torch.tensor(batch_actions, dtype=torch.float)
             batch_log_probs_s = torch.tensor(batch_log_probs, dtype=torch.float)
+            batch_entropies_s = torch.tensor(batch_entropies, dtype=torch.float)
 
             V, _ = self.get_value(batch_obs_s, batch_actions_s)
 
@@ -80,6 +101,7 @@ class PPO(object):
             batch_obs_s = torch.split(batch_obs_s, division)
             batch_actions_s = torch.split(batch_actions_s, division)
             batch_log_probs_s = torch.split(batch_log_probs_s, division)
+            batch_entropies_s = torch.split(batch_entropies_s, division)
             
             V = torch.split(V, division)
             A = torch.split(A, division)
@@ -90,16 +112,27 @@ class PPO(object):
 
             for _ in range(self.params.iteration_epochs):
                 for mini_batch in inds:
-                    
+
+                    # Add entropy bonus to actor loss
+
                     AM = (A[mini_batch] - A[mini_batch].mean()) / (A[mini_batch].std() + 1e-10)
                     V, curr_log_probs = self.get_value(batch_obs_s[mini_batch], batch_actions_s[mini_batch])
 
                     ratio = torch.exp(curr_log_probs - batch_log_probs_s[mini_batch])
+                    
+                    # Original actor loss
                     actor_loss = (-torch.min(ratio * AM, torch.clamp(ratio, 1 - self.params.clip, 1 + self.params.clip) * AM)).mean()
+
+                    # Add the entropy bonus, scaled by the coefficient
+                    entropy_bonus = (self.params.entropy_coeff * batch_entropies_s[mini_batch]).mean()
+
+                    # Total actor loss including the entropy bonus
+                    total_actor_loss = actor_loss - entropy_bonus  # Subtracting because we’re minimizing the loss
+
                     critic_loss = nn.MSELoss()(V, R[mini_batch])
 
                     self.actor_optimizer.zero_grad()
-                    actor_loss.backward(retain_graph=True)
+                    total_actor_loss.backward(retain_graph=True)  # Updated to total_actor_loss
                     torch.nn.utils.clip_grad_norm_(self.actor.parameters(), 0.5)
                     self.actor_optimizer.step()
 
@@ -109,9 +142,10 @@ class PPO(object):
                     self.critic_optimizer.step()
             
             ep_reward = np.mean([np.sum(ep_rewards) for ep_rewards in batch_rewards])
-            #wandb.log({"ep_reward": ep_reward, "time_d": (time.time() - self.start_time), "is_done": (float(done))})
+            if self.params.get('log_to_wandb'):
+                wandb.log({"ep_reward": ep_reward, "time_d": (time.time() - self.start_time), "is_done": (float(done))})
 
-        return {'timesteps': 0, 'ep_reward': ep_reward}
+        return {'timesteps': self.params.batch_timesteps, 'ep_reward': ep_reward}
 
 
     def generalized_advantage_estimate(self, batch_rewards, V):
@@ -129,26 +163,30 @@ class PPO(object):
                 advantages.insert(0, advantage)
                 i -= 1
 
-        return torch.tensor(advantages, dtype=torch.float)
+        advantages = torch.tensor(advantages, dtype=torch.float)
+        # advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+        return advantages
 
     def get_action(self, state, evaluation):
-        mean = self.actor(state)
+
+        probs = self.actor(state, 1.2)  # Assuming actor returns a probability distribution
+        dist = torch.distributions.Categorical(probs)
 
         if evaluation:
-            return  mean.detach().numpy(), 1
-        
-        dist = torch.distributions.Normal(mean, self.actor.log_std)
-        action = dist.sample()
-        log_prob = dist.log_prob(action).sum(axis=-1)
+            action = torch.argmax(probs).item()
+            return action
+                
+        action = dist.sample().item()
+        log_prob = dist.log_prob(torch.tensor(action)) + 1e-8
 
-        return action.detach().numpy(), log_prob.detach()
+        return action, log_prob.detach(), probs.detach(), dist.entropy().detach()
 
     def get_value(self, batch_state, batch_actions):
         V = self.critic(batch_state).squeeze()
 
-        mean = self.actor(batch_state)
-        dist = torch.distributions.Normal(mean, self.actor.log_std)
-        log_probs = dist.log_prob(batch_actions).sum(axis=-1)
+        action_probs = self.actor(batch_state)
+        m = torch.distributions.Categorical(action_probs)
+        log_probs = m.log_prob(batch_actions)
 
         return V, log_probs
 
@@ -166,3 +204,16 @@ class PPO(object):
         if critic_file != None:
             self.critic.load_state_dict(torch.load(critic_file))
 
+    def evaluate(self):
+        rewards = []
+        for batch_iterations in range(self.params.batch_timesteps):
+            obs = self.env.reset()
+            rewardSum = 0
+            for total_iterations in range(self.params.episode_max_timesteps):
+                action, act_logprob, act_probs, entropy = self.get_action(obs, False)
+                obs, reward, done, _ = self.env.step(action)
+                rewardSum += reward
+                if done: break
+            rewards.append(rewardSum)
+
+        return rewards

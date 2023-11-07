@@ -2,16 +2,14 @@
 
 A black-box test generation framework for test libraries. ATAG employs machine learning algorithms to construct test cases based on testing goals specified by the user. This version, created for a master's thesis, is currently in the prototype phase. Instructions will be updated at a later time.
 
-_Update 15.9.2023_
-
 Implementations ready for test generation:
 - Vanilla Policy Gradient (PG)
 - Proximal Policy Optimization (PPO)
-
-In progress:
-- Online Decision Transformer
+- Online Decision Transformer (ODT)
 
 More info: [www.rikulehtonen.fi/projects/atag](https://www.rikulehtonen.fi/projects/atag)
+
+![Atag Framework Diagram](framework.png)
 
 ## Installation
 

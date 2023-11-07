@@ -26,22 +26,21 @@ class Atag:
 
 
     def train(self):
+        train_info = None
         for ep in range(self.params.max_timesteps):
             # collect data and update the policy
             train_info = self.agent.run_episode()
             
             # Update results
-            if (ep+1) % 1 == 0:
+            if (ep+1) % 5 == 0:
                 self.agent.save(self.env.config.env_parameters.get('results_location'), ep)
 
             train_info.update({'episodes': ep})
             print({"ep": ep, **train_info})
 
+        return train_info.get('ep_reward')
 
-    def test(self):
-        for ep in range(self.params.max_timesteps):
-            # collect data and update the policy
-            train_info = self.agent.run_episode(evaluation=True)
 
-            train_info.update({'episodes': ep})
-            print({"ep": ep, **train_info})
+    def evaluate(self):
+        # collect data and update the policy
+        return self.agent.evaluate()
