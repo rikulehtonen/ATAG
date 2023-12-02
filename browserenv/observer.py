@@ -35,6 +35,9 @@ class Observer:
         scannedElements = self.test_env.evaluate_javascript('xpath=//html', ids)
         elements = self.load.elements
 
+        for element in scannedElements:
+            element['attributes'] = [attr for attr in element['attributes'] if attr['key'] != 'class']
+
         if self.config.data_collection.get('collect_data'):
             self.save.saveElements(scannedElements)
             self.save.saveActions(scannedElements)
@@ -51,7 +54,7 @@ class Observer:
             obs = self.__observeElements()
             reward = self.__observeTargets()
             if self.config.data_collection.get('collect_path'):
-                self.pathsave.save(obs, self.done)
+                self.pathsave.save(obs, self.done, self.config.label)
 
             return np.array(obs), reward, self.done
         except AssertionError:

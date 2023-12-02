@@ -123,10 +123,11 @@ class PathSave:
             self.path.append({})
 
     def saveToFile(self):
-        with open(self.config.data_collection.get('collect_path_file'), "w") as json_file:
+        file_path = self.config.data_collection.get('temp_config_path') + self.config.data_collection.get('collect_path_file')
+        with open(file_path, "w") as json_file:
             json.dump(self.path, json_file)
 
-    def save(self, obs, done):
+    def save(self, obs, done, label):
         obs = np.packbits(obs)
         state = bytearray(obs)
         state = base64.b64encode(state).decode('utf-8')
@@ -138,12 +139,13 @@ class PathSave:
         connections = layer.get(self.prevstate)
 
         if connections == None:
-            connections = {state: {'visits': 1, 'done': done}}
+            connections = {state: {'visits': 1, 'done': done, 'label': label}}
         elif state in connections.keys():
             connections[state]['visits'] += 1
             connections[state]['done'] = connections[state]['done'] or done
+            connections[state]['label'] = label
         else:
-            connections.update({state: {'visits': 1, 'done': done}})
+            connections.update({state: {'visits': 1, 'done': done, 'label': label}})
 
         layer.update({self.prevstate: connections})
         self.path[self.depth] = layer

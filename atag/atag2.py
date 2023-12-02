@@ -235,6 +235,7 @@ class Atag2:
                 return {
                     f'target_{target_rew}_return_mean': np.mean(returns),
                     f'target_{target_rew}_return_std': np.std(returns),
+                    f'target_{target_rew}_return_max': np.max(returns),
                     f'target_{target_rew}_length_mean': np.mean(lengths),
                     f'target_{target_rew}_length_std': np.std(lengths),
                 }
