@@ -5,7 +5,7 @@ from torch import nn
 from torch.distributions import Normal
 import numpy as np
 
-from .ppo import PPO
+import PPO
 
 def createFolders(path):
     if not os.path.exists(path):

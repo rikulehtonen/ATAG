@@ -1,21 +1,17 @@
-from .observer import Observer
-from .datahandler import DataLoad, DataSave
+import Observer
 import numpy as np
 
-class atag_control:
+class EnvironmentControl:
     def __init__(self, config):
 
         self.config = config
+        self.observer = Observer(self, self.config)
+        self.previousObs = []
 
-        self.load = DataLoad(self.config)
-        self.save = DataSave(self.config)
-        self.action_dim = self.load.lenActions()
-        self.state_dim = self.load.lenElements()
-
+    def init_test(self):
         self.test_env = self.config.setup_env()
-        self.observer = Observer(self, self.config, self.load, self.save)
         self.config.setup_test()
-        self.prevObs = []
+        self.previousObs = []
 
     def reset(self):
         self.config.teardown_test()
@@ -36,24 +32,19 @@ class atag_control:
             return self.config.env_parameters.get('failed_action_cost')
 
     def stagnation_reward(self, obs):
-        if any(np.array_equal(obs, x) for x in self.prevObs):
-            return self.config.env_parameters.get('stagnation_cost')
         return 0
 
     def get_selected_action(self, act):
-        if not isinstance(act, int):
-            act = act.argmax()
-        return self.load.get_action(act)
+        pass
 
-    def step(self, act, evaluation=False):
+    def step(self, act):
         selected_act = self.get_selected_action(act)
-        if evaluation: print(selected_act)
-        act_reward = self.take_action(selected_act['keyword'], selected_act['args'], {})
+        action_reward = self.take_action(selected_act)
         obs, obs_reward, done = self.observer.observe()
 
         # Calculate reward and set previous observation
         # Reward signal: cost of possible failure, reward from observation and cost from possible stagnation
-        reward = act_reward + obs_reward + self.stagnation_reward(obs)
+        reward = action_reward + obs_reward + self.stagnation_reward(obs)
         self.prevObs.append(obs)
 
         return obs, reward, done, {}

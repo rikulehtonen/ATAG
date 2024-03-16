@@ -1,4 +1,4 @@
 from .nn import NeuralNet
 from .ppo import PPO
 from .atag import Atag
-from .atag2 import Atag2
+from .ODT.ODT import Atag2
