@@ -1,21 +1,20 @@
-from ATAG.src.atag.framework.environments.Data import DataLoad, DataSave, PathSave
-import Observer
-import EnvironmentControl
 import numpy as np
 import time
+from .Data import DataLoad, DataSave, PathSave
+from atag.Framework import Observer
+from atag.Framework import EnvironmentControl 
 
-class BrowserControl(EnvironmentControl):
+class BrowserControl(EnvironmentControl.EnvironmentControl):
     def __init__(self, config):
-
+        super().__init__(config)
         self.config = config
-
         self.load = DataLoad(self.config)
         self.save = DataSave(self.config)
         self.action_dim = self.load.lenActions()
         self.state_dim = self.load.lenElements()
 
         self.test_env = self.config.setup_env()
-        self.observer = Observer(self, self.config)
+        self.observer = BrowserObserver(self, self.config)
 
         self.config.setup_test()
         self.prevObs = []
@@ -31,39 +30,10 @@ class BrowserControl(EnvironmentControl):
     def terminate(self):
         self.config.teardown_test()
 
-    def take_action(self, act, args, kwargs):
-        try:
-            getattr(self.test_env, act)(*args, **kwargs)
-            return self.config.env_parameters.get('passed_action_cost')
-        except AssertionError:
-            return self.config.env_parameters.get('failed_action_cost')
 
-    def stagnation_reward(self, obs):
-        if any(np.array_equal(obs, x) for x in self.prevObs):
-            return self.config.env_parameters.get('stagnation_cost')
-        return 0
-
-    def get_selected_action(self, act):
-        if not isinstance(act, int):
-            act = act.argmax()
-        return self.load.get_action(act)
-
-    def step(self, act, evaluation=False):
-        selected_act = self.get_selected_action(act)
-        if evaluation: print(selected_act)
-        act_reward = self.take_action(selected_act['keyword'], selected_act['args'], {})
-        obs, obs_reward, done = self.observer.observe()
-
-        # Calculate reward and set previous observation
-        # Reward signal: cost of possible failure, reward from observation and cost from possible stagnation
-        reward = act_reward + obs_reward + self.stagnation_reward(obs)
-        self.prevObs.append(obs)
-
-        return obs, reward, done, {}
-
-
-class BrowserObserver(Observer):
+class BrowserObserver(Observer.Observer):
     def __init__(self, browser_env, config):
+        
         self.done = False
         self.browser_env = browser_env
         self.test_env = browser_env.test_env

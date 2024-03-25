@@ -1,11 +1,10 @@
-import Observer
 import numpy as np
 
-class EnvironmentControl:
+class EnvironmentControl(object):
     def __init__(self, config):
-
+        
         self.config = config
-        self.observer = Observer(self, self.config)
+        self.observer = None
         self.previousObs = []
 
     def init_test(self):
@@ -24,7 +23,8 @@ class EnvironmentControl:
     def terminate(self):
         self.config.teardown_test()
 
-    def take_action(self, act, args, kwargs):
+    def take_action(self, selected_act):
+        act, args, kwargs = selected_act['keyword'], selected_act['args'], {}
         try:
             getattr(self.test_env, act)(*args, **kwargs)
             return self.config.env_parameters.get('passed_action_cost')
@@ -32,10 +32,14 @@ class EnvironmentControl:
             return self.config.env_parameters.get('failed_action_cost')
 
     def stagnation_reward(self, obs):
+        if any(np.array_equal(obs, x) for x in self.prevObs):
+            return self.config.env_parameters.get('stagnation_cost')
         return 0
 
     def get_selected_action(self, act):
-        pass
+        if not isinstance(act, int):
+            act = act.argmax()
+        return self.load.get_action(act)
 
     def step(self, act):
         selected_act = self.get_selected_action(act)

@@ -1,7 +1,8 @@
 
 
 class Observer:
-    def __init__(self):
+    def __init__(self, browser_env, config):
+        
         pass
 
     def reset(self):

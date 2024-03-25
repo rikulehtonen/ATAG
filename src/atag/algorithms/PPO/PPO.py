@@ -5,7 +5,6 @@ from torch import nn
 from torch.distributions import Normal
 import numpy as np
 from .nn import NeuralNet
-import wandb
 import time
 import random
 
@@ -38,8 +37,6 @@ class PPO(object):
         self.env = env
         self.action_probs = []
         self.rewards = []
-        if params.get('log_to_wandb'):
-            wandb.init(project="Thesis-results", entity="rikulehtonen", group=params.get('name'))
         self.start_time = time.time()
 
 
@@ -66,7 +63,7 @@ class PPO(object):
                 ep_obs.append(obs)
                 batch_obs.append(obs)
                 action, act_logprob, act_probs, entropy = self.get_action(obs, evaluation)
-                obs, reward, done, _ = self.env.step(action, evaluation)
+                obs, reward, done, _ = self.env.step(action)
 
                 ep_next_obs.append(obs)
                 ep_actions.append(action)
@@ -142,8 +139,6 @@ class PPO(object):
                     self.critic_optimizer.step()
             
             ep_reward = np.mean([np.sum(ep_rewards) for ep_rewards in batch_rewards])
-            if self.params.get('log_to_wandb'):
-                wandb.log({"ep_reward": ep_reward, "time_d": (time.time() - self.start_time), "is_done": (float(done))})
 
         return {'timesteps': self.params.batch_timesteps, 'ep_reward': ep_reward}
 

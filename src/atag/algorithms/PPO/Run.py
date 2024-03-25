@@ -5,7 +5,7 @@ from torch import nn
 from torch.distributions import Normal
 import numpy as np
 
-import PPO
+from .PPO import PPO
 
 def createFolders(path):
     if not os.path.exists(path):
@@ -16,7 +16,7 @@ class Parameters(dict):
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
-class Atag:
+class PPOAlgorithm(object):
     def __init__(self, env, **parameters):
         self.params = Parameters(parameters)
         self.env = env
